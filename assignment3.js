@@ -140,6 +140,212 @@ export class Assignment3 extends Scene {
         let screen4_transform=pillar4_transform.times(Mat4.scale(1,1/25,1)).times(Mat4.translation(0,25,0)).times(Mat4.scale(10,5,1.5));
         this.shapes.cube.draw(context, program_state, screen4_transform, this.materials.sun.override({color: stand_color}));
     }
+
+      draw_player(context, program_state, start_transform, animation) {
+    const leg_length = 1.2;
+    const leg_width = 0.8;
+    const leg_offset = 0.1;
+
+    const body_width = 2;
+    const body_height = 2;
+    const body_thickness = 1;
+
+    const arm_width = 0.6;
+    const arm_length = 2;
+
+    const head_width = 1;
+    const head_height = 1;
+
+    const animation_speed = 4;
+
+    const t = program_state.animation_time / 1000,
+      dt = program_state.animation_delta_time / 1000;
+
+    // whole body animation
+    start_transform = start_transform
+      .times(Mat4.rotation((1 / 4) * Math.sin(animation_speed * t), 0, 1, 0))
+      .times(Mat4.rotation((1 / 30) * Math.sin(animation_speed * t), 0, 0, 1));
+
+    // left leg
+    // final position
+    let leftLeg_transform = start_transform.times(
+      Mat4.translation(-1 - leg_offset, 0, 0)
+    );
+
+    // animations
+    leftLeg_transform = leftLeg_transform
+      // rotation animation
+      .times(Mat4.translation(0, 2 * leg_length, 0))
+      .times(Mat4.rotation(Math.sin(animation_speed * t), 1, 0, 0))
+      .times(Mat4.translation(0, -2 * leg_length, 0));
+    // -------------------
+
+    // model scaling
+    leftLeg_transform = leftLeg_transform
+      .times(Mat4.scale(leg_width, leg_length, leg_width))
+      .times(Mat4.translation(0, 1, 0));
+
+    this.shapes.cube.draw(
+      context,
+      program_state,
+      leftLeg_transform,
+      this.materials.test
+    );
+
+    leftLeg_transform = leftLeg_transform
+      .times(Mat4.translation(0, -1, 0))
+      .times(Mat4.scale(1 / leg_width, 1 / leg_length, 1 / leg_width));
+
+    // left foot
+    let leftFoot_transform = leftLeg_transform
+      .times(Mat4.translation(0, 0, 0.6 * leg_width))
+
+      .times(Mat4.scale(leg_width, 0.2, 1.2 * leg_width))
+      .times(Mat4.translation(0, 1, 0));
+
+    this.shapes.cube.draw(
+      context,
+      program_state,
+      leftFoot_transform,
+      this.materials.test
+    );
+
+    // right leg
+    // left leg
+    // final position
+    let rightLeg_transform = start_transform.times(
+      Mat4.translation(1 + leg_offset, 0, 0)
+    );
+
+    // animations
+    rightLeg_transform = rightLeg_transform
+      // rotation animation
+      .times(Mat4.translation(0, 2 * leg_length, 0))
+      .times(Mat4.rotation(-Math.sin(animation_speed * t), 1, 0, 0))
+      .times(Mat4.translation(0, -2 * leg_length, 0));
+    // -------------------
+
+    // model scaling
+    rightLeg_transform = rightLeg_transform
+      .times(Mat4.scale(leg_width, leg_length, leg_width))
+      .times(Mat4.translation(0, 1, 0));
+
+    this.shapes.cube.draw(
+      context,
+      program_state,
+      rightLeg_transform,
+      this.materials.test
+    );
+
+    rightLeg_transform = rightLeg_transform
+      .times(Mat4.translation(0, -1, 0))
+      .times(Mat4.scale(1 / leg_width, 1 / leg_length, 1 / leg_width));
+
+    // right foot
+    let rightFoot_transform = rightLeg_transform
+      .times(Mat4.translation(0, 0, 0.6 * leg_width))
+
+      .times(Mat4.scale(leg_width, 0.2, 1.2 * leg_width))
+      .times(Mat4.translation(0, 1, 0));
+    this.shapes.cube.draw(
+      context,
+      program_state,
+      rightFoot_transform,
+      this.materials.test
+    );
+
+    // left butt cheek
+    let leftButtCheek_transform = start_transform
+      .times(Mat4.translation(-1, leg_length * 2, -body_thickness / 2))
+      .times(Mat4.scale(body_thickness, body_thickness, body_thickness));
+    this.shapes.sphere.draw(
+      context,
+      program_state,
+      leftButtCheek_transform,
+      this.materials.test
+    );
+
+    // right butt cheek
+    let rightButtCheek_transform = start_transform
+      .times(Mat4.translation(1, leg_length * 2, -body_thickness / 2))
+      .times(Mat4.scale(body_thickness, body_thickness, body_thickness));
+    this.shapes.sphere.draw(
+      context,
+      program_state,
+      rightButtCheek_transform,
+      this.materials.test
+    );
+
+    // body
+    let body_transform = start_transform
+      .times(Mat4.translation(0, body_height + leg_length * 2, 0))
+      .times(Mat4.scale(body_width, body_height, body_thickness));
+    this.shapes.cube.draw(
+      context,
+      program_state,
+      body_transform,
+      this.materials.test
+    );
+
+    // left arm
+    let leftArm_transform = start_transform
+      .times(
+        Mat4.translation(
+          -body_width - arm_width,
+          2 * leg_length + 2 * body_height - arm_length,
+          0
+        )
+      )
+      // rotation animation
+      .times(Mat4.translation(0, arm_length * 0.8, 0))
+      .times(Mat4.rotation(-Math.sin(animation_speed * t), 1, 0, 0))
+      .times(Mat4.translation(0, -arm_length * 0.8, 0))
+      // -----------------
+      .times(Mat4.scale(arm_width, arm_length, arm_width));
+
+    this.shapes.cube.draw(
+      context,
+      program_state,
+      leftArm_transform,
+      this.materials.test
+    );
+
+    // right arm
+    let rightArm_transform = start_transform
+      .times(
+        Mat4.translation(
+          body_width + arm_width,
+          2 * leg_length + 2 * body_height - arm_length,
+          0
+        )
+      )
+      // rotation animation
+      .times(Mat4.translation(0, arm_length * 0.8, 0))
+      .times(Mat4.rotation(Math.sin(animation_speed * t), 1, 0, 0))
+      .times(Mat4.translation(0, -arm_length * 0.8, 0))
+      // -----------------
+      .times(Mat4.scale(arm_width, arm_length, arm_width));
+    this.shapes.cube.draw(
+      context,
+      program_state,
+      rightArm_transform,
+      this.materials.test
+    );
+
+    // head
+    let head_transform = start_transform
+      .times(
+        Mat4.translation(0, 1 + leg_length + body_height * 2 + head_height, 0)
+      )
+      .times(Mat4.scale(head_width, head_height, head_width));
+    this.shapes.cube.draw(
+      context,
+      program_state,
+      head_transform,
+      this.materials.test
+    );
+  }
+
     display(context, program_state) {
         this.draw_stadium(context, program_state);
 
