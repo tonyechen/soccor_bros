@@ -60,21 +60,27 @@ export class Assignment3 extends Scene {
         //this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
         this.initial_camera_location = Mat4.look_at(vec3(0, 1, 0), vec3(30, 0, 0), vec3(0, 1, 0));
         this.kick = false;
+        this.kick_t = 0;
+        this.goal = false;
+        this.score = 0;
     }
 
     make_control_panel() {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        this.key_triggered_button("View solar system", ["Control", "0"], () => this.attached = () => this.initial_camera_location);
-        this.new_line();
-        this.key_triggered_button("Attach to planet 1", ["Control", "1"], () => this.attached = () => this.planet_1);
-        this.key_triggered_button("Attach to planet 2", ["Control", "2"], () => this.attached = () => this.planet_2);
-        this.new_line();
-        this.key_triggered_button("Attach to planet 3", ["Control", "3"], () => this.attached = () => this.planet_3);
-        this.key_triggered_button("Attach to planet 4", ["Control", "4"], () => this.attached = () => this.planet_4);
-        this.new_line();
-        this.key_triggered_button("Attach to moon", ["Control", "m"], () => this.attached = () => this.moon);
-        this.key_triggered_button("kick", ["t"], ()=> this.kick = true)
+        // this.key_triggered_button("View solar system", ["Control", "0"], () => this.attached = () => this.initial_camera_location);
+        // this.new_line();
+        // this.key_triggered_button("Attach to planet 1", ["Control", "1"], () => this.attached = () => this.planet_1);
+        // this.key_triggered_button("Attach to planet 2", ["Control", "2"], () => this.attached = () => this.planet_2);
+        // this.new_line();
+        // this.key_triggered_button("Attach to planet 3", ["Control", "3"], () => this.attached = () => this.planet_3);
+        // this.key_triggered_button("Attach to planet 4", ["Control", "4"], () => this.attached = () => this.planet_4);
+        // this.new_line();
+        // this.key_triggered_button("Attach to moon", ["Control", "m"], () => this.attached = () => this.moon);
+        // this.new_line();
+        this.key_triggered_button("kick", ["t"], ()=> this.kick = true,this.kick_t = (new Date().getTime()));
     }
+
+
     draw_stadium(context, program_state)
     {
         if (!context.scratchpad.controls) {
@@ -155,37 +161,67 @@ export class Assignment3 extends Scene {
             Math.PI / 4, context.width / context.height, .1, 1000);
 
         let t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
+        let time = t;
         let model_transform = Mat4.identity();
 
+        //correct dimensions but looks wrong, we dont use most of the pitch anyways. we could have the ball on the halfway line
+        if(!this.goal){
+            let ball_transform = model_transform.times(Mat4.translation(38 , 0.5, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
+            if(this.kick) {
+                let curr = (new Date().getTime());
+                //time = ((new Date().getTime()) - this.kick_t)%10;
+                //console.log(time);
+                ball_transform = ball_transform.times(Mat4.translation(time*Math.cos(0.5) + 30, time*Math.sin(0.5), 0));
+                //the time is always running and therefore the ball teleports. need to keep time 0 until clicked.
 
-        let ball_transform = model_transform.times(Mat4.translation(38 , 0.5, 0)).times(Mat4.scale(0.5, 0.5, 0.5)); //correct dimensions but looks wrong, we dont use most of the pitch anyways. we could have the ball on the halfway line
+                //if on the pitch, roll
 
-
-        if(this.kick) {
-
-
-            ball_transform = ball_transform.times(Mat4.translation(5*t*Math.cos(0.5), t*Math.sin(0.5), 0));
-            //the time is always running and therefore the ball teleports. need to keep time 0 until clicked. 
-
-
-            //if on the pitch, roll
-
-            if(ball_transform.valueOf()[0][3] > 55.0){ // trying to figure it out
-                ball_transform = model_transform.times(Mat4.translation(55 , 2.2, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
+                if(ball_transform.valueOf()[0][3] > 55.0){ // trying to figure it out
+                    this.goal = true;
+                    this.score = this.score +1;
+                    this.kick = false;
+                    //ball_transform = model_transform.times(Mat4.translation(55 , 2.2, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
+                }
+                //ball_transform = ball_transform.times(Mat4.translation(3 * t, 0, 0));
+                ball_transform = ball_transform.times(Mat4.rotation(-t, 0, 0.5, 1));
+                //else
 
             }
-            //ball_transform = ball_transform.times(Mat4.translation(3 * t, 0, 0));
-            ball_transform = ball_transform.times(Mat4.rotation(-t, 0, 0.5, 1));
-            //else
-
+            else{
+            }
+            this.shapes.ball.draw(context, program_state, ball_transform, this.materials.ball);
         }
         else{
+            let goal_transform = model_transform.times(Mat4.translation(55 , 2.2, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
+            this.shapes.ball.draw(context, program_state, goal_transform, this.materials.ball);
+            console.log(this.score);
+            this.goal = false;
         }
-        this.shapes.ball.draw(context, program_state, ball_transform, this.materials.ball);
 
     }
+
+    draw_goal(context, program_state){
+        let model_transform = Mat4.identity();
+        let stand_color = color(0.298, 0.298, 0.298, 1);
+        let goalpost1_transform=model_transform.times(Mat4.translation(50,0,10)).times(Mat4.rotation(-Math.PI/4,0,1,0))
+            .times(Mat4.translation(0,2.7,0))
+            .times(Mat4.scale(0.2,2.7,0.2))
+        this.shapes.cube.draw(context, program_state, goalpost1_transform, this.materials.sun.override({color: hex_color("ffffff")}));
+        let goalpost2_transform=model_transform.times(Mat4.translation(50,0,-10)).times(Mat4.rotation(-Math.PI/4,0,1,0))
+            .times(Mat4.translation(0,2.7,0))
+            .times(Mat4.scale(0.2,2.7,0.2))
+        this.shapes.cube.draw(context, program_state, goalpost2_transform, this.materials.sun.override({color: hex_color("ffffff")}));
+        let goalbar_transform=model_transform.times(Mat4.translation(50,0,0))
+            .times(Mat4.translation(0,5.6,0))
+            .times(Mat4.rotation(Math.PI/2, 1, 0, 0))
+            .times(Mat4.scale(0.2,10,0.2))
+        this.shapes.cube.draw(context, program_state, goalbar_transform, this.materials.sun.override({color: hex_color("ffffff")}));
+    }
+
+
     display(context, program_state) {
         this.draw_stadium(context, program_state);
+        this.draw_goal(context, program_state);
         this.draw_ball(context, program_state);
     }
 
