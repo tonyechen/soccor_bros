@@ -18,13 +18,13 @@ export class Assignment3 extends Scene {
             cylinder: new defs.Capped_Cylinder(15,15),
             square: new defs.Square(),
             cube: new defs.Cube(),
-            // TODO:  Fill in as many additional shape instances as needed in this key/value table.
-            //        (Requirement 1)
             sun: new defs.Subdivision_Sphere(4),
             planet1: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(2),
             planet2: new defs.Subdivision_Sphere(3),
             //ball: new defs.Subdivision_Sphere(4),
             ball: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(3),
+            guide: new defs.Axis_Arrows(),
+            triangle: new defs.Triangle(),
             ring: new defs.Torus(50, 50),
             planet4: new defs.Subdivision_Sphere(4),
             moon: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(1)
@@ -167,6 +167,7 @@ export class Assignment3 extends Scene {
         //correct dimensions but looks wrong, we dont use most of the pitch anyways. we could have the ball on the halfway line
         if(!this.goal){
             let ball_transform = model_transform.times(Mat4.translation(38 , 0.5, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
+
             if(this.kick) {
                 let curr = (new Date().getTime());
                 //time = ((new Date().getTime()) - this.kick_t)%10;
@@ -188,13 +189,17 @@ export class Assignment3 extends Scene {
 
             }
             else{
+                let guide_transform = model_transform.times(Mat4.translation(38, 0.5, 0)).times(Mat4.scale(1, 0.1, 0.1)).times(Mat4.translation(1, 1, 0));
+                let point_transform = model_transform.times(Mat4.translation(39, 0.5, 0)).times(Mat4.rotation(Math.PI/4, 0, 1, 0));
+                this.shapes.cube.draw(context, program_state,guide_transform, this.materials.test.override({color: hex_color("#F22431")}));
+                this.shapes.triangle.draw(context, program_state,point_transform, this.materials.test.override({color: hex_color("#F22431")}));
             }
             this.shapes.ball.draw(context, program_state, ball_transform, this.materials.ball);
         }
         else{
             let goal_transform = model_transform.times(Mat4.translation(55 , 2.2, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
             this.shapes.ball.draw(context, program_state, goal_transform, this.materials.ball);
-            console.log(this.score);
+            console.log("You Scored!, Your total is now: ", this.score);
             this.goal = false;
         }
 
