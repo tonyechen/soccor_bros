@@ -1,21 +1,9 @@
 import { defs, tiny } from './examples/common.js';
 
 const {
-  Vector,
-  Vector3,
-  vec,
-  vec3,
-  vec4,
-  color,
-  hex_color,
-  Shader,
-  Matrix,
-  Mat4,
-  Light,
-  Shape,
-  Material,
-  Scene,
+    Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene, Texture,
 } = tiny;
+const {Textured_Phong} = defs
 
 export class Assignment3 extends Scene {
   constructor() {
@@ -308,6 +296,130 @@ export class Assignment3 extends Scene {
       screen4_transform,
       this.materials.sun.override({ color: stand_color })
     );
+    
+    
+        program_state.projection_transform = Mat4.perspective(
+            Math.PI / 4, context.width / context.height, .1, 1000);
+
+        const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
+        const yellow = hex_color("#fac91a");
+        let model_transform = Mat4.identity();
+
+        let pitch_x_dim=55;
+        let pitch_y_dim=25;
+
+
+        let stand_height=25;
+
+        let screen_scale_x=10;
+        let screen_scale_y=5;
+        let screen_scale_z = 1.5;
+
+        //Make the concrete base
+        let concerete_color=color(0.83, 0.83, 0.83, 1);
+
+        let sun_radius= 5
+        let light_color = color(1,1,1,1);
+        let bulb_color = color(1,1,0.2,1);
+
+         //Make a point light source of the same color of the sun located in the center of the sun
+        const reflectionMatrix=[
+            [1,1],
+            [1,-1],
+            [-1,1],
+            [-1,-1]
+        ];
+        const rotationAngle = [Math.PI/4,3*Math.PI/4,-1*Math.PI/4,-3*Math.PI/4];
+
+        let sceneLights=[];
+
+        for (let i=0;i<reflectionMatrix.length; i++)
+        {
+            var currReflection = reflectionMatrix[i];
+
+            let pillar_transform=model_transform.times(Mat4.translation((pitch_x_dim+3)*currReflection[0],0,(pitch_y_dim+3)*currReflection[1])).times(Mat4.rotation(rotationAngle[i],0,1,0))
+                .times(Mat4.translation(0,stand_height,0))
+                .times(Mat4.scale(1,stand_height,1));
+
+            let light_base_transform = pillar_transform.times(Mat4.scale(1,1/stand_height,1)).times(Mat4.translation(0,stand_height,0)).times(Mat4.scale(1.5,1.5,1)).times(Mat4.translation(5,1.25,-1));
+            for (let i=0;i<5;i++)
+            {
+                let light1_transform = light_base_transform.times(Mat4.translation(-2.5*i,0,0));
+                let light1_pos = light1_transform.times(vec4(0,0,0,1))
+                sceneLights.push(new Light(light1_pos, light_color, 7 ** sun_radius));
+
+
+                let light2_transform = light_base_transform.times(Mat4.translation(-2.5*i,-2.5,0));
+                let light2_pos = light2_transform.times(vec4(0,0,0,1))
+                sceneLights.push(new Light(light2_pos, light_color, 7 ** sun_radius));
+            }
+        }
+
+        program_state.lights=sceneLights;
+        console.log(program_state.lights);
+
+        let concerete_transform=model_transform.times(Mat4.translation(0,-0.1,0)).times(Mat4.rotation(Math.PI/2,1,0,0)).times(Mat4.scale(pitch_x_dim*1.5,pitch_y_dim*1.5,1));
+        this.shapes.square.draw(context,program_state,concerete_transform,this.materials.sun.override({color: concerete_color}));
+
+
+
+
+        // Draw the pitch
+        let pitch_transform=model_transform.times(Mat4.rotation(Math.PI/2,1,0,0)).times(Mat4.scale(pitch_x_dim,pitch_y_dim,1));
+        this.shapes.square.draw(context, program_state, pitch_transform, this.materials.texture);
+
+        // Make a point light source of the same color of the sun located in the center of the sun
+        const light_position = vec4(0, 0, 0, 1);
+        program_state.lights = [new Light(light_position, color(0,0,0,1), 10 ** sun_radius)];
+
+        // Draw cylinder
+        let pitch_transform=model_transform.times(Mat4.rotation(Math.PI/2,1,0,0)).times(Mat4.scale(55,25,1));
+        this.shapes.square.draw(context, program_state, pitch_transform, this.materials.sun.override({color: pitch_color}));
+
+
+        //STAND CODE -----------------------------------
+        let stand_color = color(0.298, 0.298, 0.298, 1);
+
+
+        for (let i=0;i<8;i++) {
+            let stand2_transform=model_transform.times(Mat4.translation(0,0,pitch_y_dim)).times(Mat4.scale(pitch_x_dim,1.25*(i+1),1.5)).times(Mat4.translation(0,1,i));
+            this.shapes.cube.draw(context, program_state, stand2_transform, this.materials.sun.override({color: stand_color}));
+        }
+
+        for (let i=0;i<8;i++) {
+            let stand2_transform=model_transform.times(Mat4.translation(0,0,-1*pitch_y_dim)).times(Mat4.scale(pitch_x_dim,1.25*(i+1),1.5)).times(Mat4.translation(0,1,-i));
+            this.shapes.cube.draw(context, program_state, stand2_transform, this.materials.sun.override({color: stand_color}));
+        }
+
+
+        //LIGHTSTAND CODE
+
+        for (let i=0;i<reflectionMatrix.length; i++)
+        {
+            var currReflection = reflectionMatrix[i];
+
+            let pillar_transform=model_transform.times(Mat4.translation((pitch_x_dim+3)*currReflection[0],0,(pitch_y_dim+3)*currReflection[1])).times(Mat4.rotation(rotationAngle[i],0,1,0))
+                .times(Mat4.translation(0,stand_height,0))
+                .times(Mat4.scale(1,stand_height,1));
+            this.shapes.cube.draw(context, program_state, pillar_transform, this.materials.sun.override({color: stand_color}));
+
+            let screen_transform=pillar_transform.times(Mat4.scale(1,1/stand_height,1)).times(Mat4.translation(0,stand_height,0)).times(Mat4.scale(screen_scale_x,screen_scale_y,screen_scale_z));
+            this.shapes.cube.draw(context, program_state, screen_transform, this.materials.sun.override({color: stand_color}));
+
+            let light_base_transform = pillar_transform.times(Mat4.scale(1,1/stand_height,1)).times(Mat4.translation(0,stand_height,0)).times(Mat4.scale(1.5,1.5,1)).times(Mat4.translation(5,1.25,-1));
+            for (let i=0;i<5;i++)
+            {
+                let light1_transform = light_base_transform.times(Mat4.translation(-2.5*i,0,0));
+                this.shapes.cube.draw(context,program_state,light1_transform,this.materials.sun.override({color: bulb_color}));
+
+                let light2_transform = light_base_transform.times(Mat4.translation(-2.5*i,-2.5,0));
+                this.shapes.cube.draw(context,program_state,light2_transform,this.materials.sun.override({color: bulb_color}));
+            }
+        }
+
+
+        }
+  
   }
 
   draw_ball(context, program_state) {
@@ -317,6 +429,7 @@ export class Assignment3 extends Scene {
       );
       // Define the global camera and projection matrices, which are stored in program_state.
       program_state.set_camera(this.initial_camera_location);
+
     }
     program_state.projection_transform = Mat4.perspective(
       Math.PI / 4,
@@ -668,13 +781,13 @@ export class Assignment3 extends Scene {
         .times(Mat4.translation(0, -arm_length * 0.8, 0));
       // -----------------
     }
+    
     if (animation == 'kicking') {
       rightArm_transform = rightArm_transform
         .times(Mat4.translation(0, arm_length * 0.8, 0))
         .times(Mat4.rotation(Math.sin(animation_speed * t), -1, 1, 0))
         .times(Mat4.translation(0, -arm_length * 0.8, 0));
       // -----------------
-    }
 
     // model scaling
     rightArm_transform = rightArm_transform.times(
@@ -701,7 +814,50 @@ export class Assignment3 extends Scene {
       this.materials.test
     );
   }
+    display(context, program_state) {
+        this.draw_stadium(context, program_state);
 
+        //Near side stands for fans
+        let stand1_transform=model_transform.times(Mat4.translation(0,0,25)).times(Mat4.rotation(Math.PI/4,1,0,0)).times(Mat4.scale(55,10,1)).times(Mat4.translation(0,1,0));
+        this.shapes.square.draw(context, program_state, stand1_transform, this.materials.sun.override({color: stand_color}));
+
+        //Far side stands for fans
+        let stand2_transform=model_transform.times(Mat4.translation(0,0,-25)).times(Mat4.rotation(-Math.PI/4,1,0,0)).times(Mat4.scale(55,10,1)).times(Mat4.translation(0,1,0));
+        this.shapes.square.draw(context, program_state, stand2_transform, this.materials.sun.override({color: stand_color}));
+
+        //Right Near Side Lightstand
+        let pillar1_transform=model_transform.times(Mat4.translation(55,0,25)).times(Mat4.rotation(Math.PI/4,0,1,0))
+                                                .times(Mat4.translation(0,25,0))
+                                                .times(Mat4.scale(1,25,1))
+        this.shapes.cube.draw(context, program_state, pillar1_transform, this.materials.sun.override({color: stand_color}));
+        let screen1_transform=pillar1_transform.times(Mat4.scale(1,1/25,1)).times(Mat4.translation(0,25,0)).times(Mat4.scale(10,5,1.5));
+        this.shapes.cube.draw(context, program_state, screen1_transform, this.materials.sun.override({color: stand_color}));
+
+        //Left Near side Lightstand
+        let pillar2_transform=model_transform.times(Mat4.translation(-55,0,25)).times(Mat4.rotation(-Math.PI/4,0,1,0))
+            .times(Mat4.translation(0,25,0))
+            .times(Mat4.scale(1,25,1))
+        this.shapes.cube.draw(context, program_state, pillar2_transform, this.materials.sun.override({color: stand_color}));
+        let screen2_transform=pillar2_transform.times(Mat4.scale(1,1/25,1)).times(Mat4.translation(0,25,0)).times(Mat4.scale(10,5,1.5));
+        this.shapes.cube.draw(context, program_state, screen2_transform, this.materials.sun.override({color: stand_color}));
+
+
+        //Left Far Side Lightstand
+        let pillar3_transform=model_transform.times(Mat4.translation(-55,0,-25)).times(Mat4.rotation(5*Math.PI/4,0,1,0))
+            .times(Mat4.translation(0,25,0))
+            .times(Mat4.scale(1,25,1))
+        this.shapes.cube.draw(context, program_state, pillar3_transform, this.materials.sun.override({color: stand_color}));
+        let screen3_transform=pillar3_transform.times(Mat4.scale(1,1/25,1)).times(Mat4.translation(0,25,0)).times(Mat4.scale(10,5,1.5));
+        this.shapes.cube.draw(context, program_state, screen3_transform, this.materials.sun.override({color: stand_color}));
+
+        //Right Far Side Light Stand
+        let pillar4_transform=model_transform.times(Mat4.translation(55,0,-25)).times(Mat4.rotation(3*Math.PI/4,0,1,0))
+            .times(Mat4.translation(0,25,0))
+            .times(Mat4.scale(1,25,1))
+        this.shapes.cube.draw(context, program_state, pillar4_transform, this.materials.sun.override({color: stand_color}));
+        let screen4_transform=pillar4_transform.times(Mat4.scale(1,1/25,1)).times(Mat4.translation(0,25,0)).times(Mat4.scale(10,5,1.5));
+        this.shapes.cube.draw(context, program_state, screen4_transform, this.materials.sun.override({color: stand_color}));
+    }
   display(context, program_state) {
     this.draw_stadium(context, program_state);
     this.draw_goal(context, program_state);
