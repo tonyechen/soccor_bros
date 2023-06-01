@@ -19,6 +19,18 @@ export class Assignment3 extends Scene {
             cylinder: new defs.Capped_Cylinder(15,15),
             square: new defs.Square(),
             cube: new defs.Cube(),
+
+            // TODO:  Fill in as many additional shape instances as needed in this key/value table.
+            //        (Requirement 1)
+            sun: new defs.Subdivision_Sphere(4),
+            planet1: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(2),
+            planet2: new defs.Subdivision_Sphere(3),
+            //ball: new defs.Subdivision_Sphere(4),
+            ball: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(3),
+            ring: new defs.Torus(50, 50),
+            planet4: new defs.Subdivision_Sphere(4),
+            moon: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(1)
+
         };
 
         // *** Materials
@@ -29,19 +41,53 @@ export class Assignment3 extends Scene {
                 {ambient: .4, diffusivity: .6, color: hex_color("#992828")}),
             sun: new Material(new defs.Phong_Shader(),
                 {ambient: 1, diffusivity: 1, color: hex_color("#ffffff")}),
+
             texture: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 1, diffusivity: 0.2, specularity: 0.2,
                 texture: new Texture("assets/grass_texture.jpg")
             }),
 
+
+            // TODO:  Fill in as many additional material objects as needed in this key/value table.
+            //        (Requirement 4)
+            // Default ambient lighting: 0
+            planet1: new Material(new defs.Phong_Shader(),
+                {ambient: 0, diffusivity: 1, color: hex_color("#808080"), specularity: 0}),
+            planet2_g: new Material(new Gouraud_Shader(),
+                {ambient: 0, diffusivity: .2, color: hex_color("#80FFFF"), specularity: 1}),
+            planet2_p: new Material(new defs.Phong_Shader(),
+                {ambient: 0, diffusivity: .2, color: hex_color("#80FFFF"), specularity: 1}),
+            ball: new Material(new Gouraud_Shader(),
+                {ambient: 0.8, diffusivity: 1, color: hex_color("#ffffff"), specularity: 0}),
+            ring: new Material(new Ring_Shader(),
+                {ambient: 1, diffusivity: 0, color: hex_color("#B08040"), specularity: 0, smoothness: 0}),
+            planet4: new Material(new defs.Phong_Shader(),
+                {ambient: 0, color: hex_color("#1221C9"), specularity: 1}),
+            moon: new Material(new defs.Phong_Shader(),
+                {ambient: 0, diffusivity: .7, color: hex_color("#F22431"), specularity: 1}),
+
         }
 
-        this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
+        //this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
+        this.initial_camera_location = Mat4.look_at(vec3(0, 1, 0), vec3(30, 0, 0), vec3(0, 1, 0));
+        this.kick = false;
     }
 
     make_control_panel() {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
+
+        this.key_triggered_button("View solar system", ["Control", "0"], () => this.attached = () => this.initial_camera_location);
+        this.new_line();
+        this.key_triggered_button("Attach to planet 1", ["Control", "1"], () => this.attached = () => this.planet_1);
+        this.key_triggered_button("Attach to planet 2", ["Control", "2"], () => this.attached = () => this.planet_2);
+        this.new_line();
+        this.key_triggered_button("Attach to planet 3", ["Control", "3"], () => this.attached = () => this.planet_3);
+        this.key_triggered_button("Attach to planet 4", ["Control", "4"], () => this.attached = () => this.planet_4);
+        this.new_line();
+        this.key_triggered_button("Attach to moon", ["Control", "m"], () => this.attached = () => this.moon);
+        this.key_triggered_button("kick", ["t"], ()=> this.kick = true)
+
     }
     draw_stadium(context, program_state)
     {
@@ -116,12 +162,23 @@ export class Assignment3 extends Scene {
 
 
 
+
         // Draw the pitch
         let pitch_transform=model_transform.times(Mat4.rotation(Math.PI/2,1,0,0)).times(Mat4.scale(pitch_x_dim,pitch_y_dim,1));
         this.shapes.square.draw(context, program_state, pitch_transform, this.materials.texture);
 
+        // Make a point light source of the same color of the sun located in the center of the sun
+        const light_position = vec4(0, 0, 0, 1);
+        program_state.lights = [new Light(light_position, color(0,0,0,1), 10 ** sun_radius)];
+
+        // Draw cylinder
+        let pitch_transform=model_transform.times(Mat4.rotation(Math.PI/2,1,0,0)).times(Mat4.scale(55,25,1));
+        this.shapes.square.draw(context, program_state, pitch_transform, this.materials.sun.override({color: pitch_color}));
+
+
         //STAND CODE -----------------------------------
         let stand_color = color(0.298, 0.298, 0.298, 1);
+
 
         for (let i=0;i<8;i++) {
             let stand2_transform=model_transform.times(Mat4.translation(0,0,pitch_y_dim)).times(Mat4.scale(pitch_x_dim,1.25*(i+1),1.5)).times(Mat4.translation(0,1,i));
@@ -164,6 +221,92 @@ export class Assignment3 extends Scene {
 
     display(context, program_state) {
         this.draw_stadium(context, program_state);
+
+        //Near side stands for fans
+        let stand1_transform=model_transform.times(Mat4.translation(0,0,25)).times(Mat4.rotation(Math.PI/4,1,0,0)).times(Mat4.scale(55,10,1)).times(Mat4.translation(0,1,0));
+        this.shapes.square.draw(context, program_state, stand1_transform, this.materials.sun.override({color: stand_color}));
+
+        //Far side stands for fans
+        let stand2_transform=model_transform.times(Mat4.translation(0,0,-25)).times(Mat4.rotation(-Math.PI/4,1,0,0)).times(Mat4.scale(55,10,1)).times(Mat4.translation(0,1,0));
+        this.shapes.square.draw(context, program_state, stand2_transform, this.materials.sun.override({color: stand_color}));
+
+        //Right Near Side Lightstand
+        let pillar1_transform=model_transform.times(Mat4.translation(55,0,25)).times(Mat4.rotation(Math.PI/4,0,1,0))
+                                                .times(Mat4.translation(0,25,0))
+                                                .times(Mat4.scale(1,25,1))
+        this.shapes.cube.draw(context, program_state, pillar1_transform, this.materials.sun.override({color: stand_color}));
+        let screen1_transform=pillar1_transform.times(Mat4.scale(1,1/25,1)).times(Mat4.translation(0,25,0)).times(Mat4.scale(10,5,1.5));
+        this.shapes.cube.draw(context, program_state, screen1_transform, this.materials.sun.override({color: stand_color}));
+
+        //Left Near side Lightstand
+        let pillar2_transform=model_transform.times(Mat4.translation(-55,0,25)).times(Mat4.rotation(-Math.PI/4,0,1,0))
+            .times(Mat4.translation(0,25,0))
+            .times(Mat4.scale(1,25,1))
+        this.shapes.cube.draw(context, program_state, pillar2_transform, this.materials.sun.override({color: stand_color}));
+        let screen2_transform=pillar2_transform.times(Mat4.scale(1,1/25,1)).times(Mat4.translation(0,25,0)).times(Mat4.scale(10,5,1.5));
+        this.shapes.cube.draw(context, program_state, screen2_transform, this.materials.sun.override({color: stand_color}));
+
+
+        //Left Far Side Lightstand
+        let pillar3_transform=model_transform.times(Mat4.translation(-55,0,-25)).times(Mat4.rotation(5*Math.PI/4,0,1,0))
+            .times(Mat4.translation(0,25,0))
+            .times(Mat4.scale(1,25,1))
+        this.shapes.cube.draw(context, program_state, pillar3_transform, this.materials.sun.override({color: stand_color}));
+        let screen3_transform=pillar3_transform.times(Mat4.scale(1,1/25,1)).times(Mat4.translation(0,25,0)).times(Mat4.scale(10,5,1.5));
+        this.shapes.cube.draw(context, program_state, screen3_transform, this.materials.sun.override({color: stand_color}));
+
+        //Right Far Side Light Stand
+        let pillar4_transform=model_transform.times(Mat4.translation(55,0,-25)).times(Mat4.rotation(3*Math.PI/4,0,1,0))
+            .times(Mat4.translation(0,25,0))
+            .times(Mat4.scale(1,25,1))
+        this.shapes.cube.draw(context, program_state, pillar4_transform, this.materials.sun.override({color: stand_color}));
+        let screen4_transform=pillar4_transform.times(Mat4.scale(1,1/25,1)).times(Mat4.translation(0,25,0)).times(Mat4.scale(10,5,1.5));
+        this.shapes.cube.draw(context, program_state, screen4_transform, this.materials.sun.override({color: stand_color}));
+    }
+
+    draw_ball(context, program_state){
+        if (!context.scratchpad.controls) {
+            this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
+            // Define the global camera and projection matrices, which are stored in program_state.
+            program_state.set_camera(this.initial_camera_location);
+        }
+        program_state.projection_transform = Mat4.perspective(
+            Math.PI / 4, context.width / context.height, .1, 1000);
+
+        let t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
+        let model_transform = Mat4.identity();
+
+
+        let ball_transform = model_transform.times(Mat4.translation(38 , 0.5, 0)).times(Mat4.scale(0.5, 0.5, 0.5)); //correct dimensions but looks wrong, we dont use most of the pitch anyways. we could have the ball on the halfway line
+
+
+        if(this.kick) {
+
+
+            ball_transform = ball_transform.times(Mat4.translation(5*t*Math.cos(0.5), t*Math.sin(0.5), 0));
+            //the time is always running and therefore the ball teleports. need to keep time 0 until clicked. 
+
+
+            //if on the pitch, roll
+
+            if(ball_transform.valueOf()[0][3] > 55.0){ // trying to figure it out
+                ball_transform = model_transform.times(Mat4.translation(55 , 2.2, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
+
+            }
+            //ball_transform = ball_transform.times(Mat4.translation(3 * t, 0, 0));
+            ball_transform = ball_transform.times(Mat4.rotation(-t, 0, 0.5, 1));
+            //else
+
+        }
+        else{
+        }
+        this.shapes.ball.draw(context, program_state, ball_transform, this.materials.ball);
+
+    }
+    display(context, program_state) {
+        this.draw_stadium(context, program_state);
+        this.draw_ball(context, program_state);
+
     }
 
 }
