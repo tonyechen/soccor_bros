@@ -112,14 +112,14 @@ export class Assignment3 extends Scene {
       }),
     };
 
+    // this.initial_camera_location = Mat4.look_at(
+    //   vec3(0, 10, 20),
+    //   vec3(0, 0, 0),
+    //   vec3(0, 1, 0)
+    // );
     this.initial_camera_location = Mat4.look_at(
-      vec3(0, 10, 20),
-      vec3(0, 0, 0),
-      vec3(0, 1, 0)
-    );
-    this.initial_camera_location = Mat4.look_at(
-      vec3(0, 1, 0),
-      vec3(30, 0, 0),
+      vec3(20, 8, 0),
+      vec3(50, 0, 0),
       vec3(0, 1, 0)
     );
     this.kick = false;
@@ -708,9 +708,16 @@ export class Assignment3 extends Scene {
     this.draw_ball(context, program_state);
     let start_transform = Mat4.identity();
     start_transform = start_transform
-      .times(Mat4.translation(40, 0, 0))
+      .times(Mat4.translation(49, 0, 0))
       .times(Mat4.rotation(-1.5, 0, 1, 0))
-      .times(Mat4.scale(1 / 3, 1 / 3, 1 / 3));
+      .times(Mat4.scale(1 / 2, 1 / 2, 1 / 2));
+    this.draw_player(context, program_state, start_transform, '');
+
+    start_transform = Mat4.identity();
+    start_transform = start_transform
+      .times(Mat4.translation(35, 0, -2))
+      .times(Mat4.rotation(1.2, 0, 1, 0))
+      .times(Mat4.scale(1 / 2, 1 / 2, 1 / 2));
     this.draw_player(context, program_state, start_transform, 'kicking');
   }
 }
