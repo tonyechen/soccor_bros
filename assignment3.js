@@ -82,7 +82,7 @@ export class Assignment3 extends Scene {
       }),
     };
 
-      this.initial_camera_location = Mat4.look_at(
+    this.initial_camera_location = Mat4.look_at(
       vec3(20, 8, 0),
       vec3(50, 0, 0),
       vec3(0, 1, 0)
@@ -91,6 +91,14 @@ export class Assignment3 extends Scene {
     this.kick_t = 0;
     this.goal = false;
     this.score = 0;
+
+    // goalie params
+    this.goalie_position = 0;
+    this.goalie_speed = 10;
+    this.goalie_direction = 1;
+    this.isGoalieRandom = false;
+    this.goalie_random_timer = 0;
+    this.goalieDirChangeFrequency = 0.5; // change / s
   }
 
   make_control_panel() {
@@ -105,11 +113,21 @@ export class Assignment3 extends Scene {
     // this.new_line();
     // this.key_triggered_button("Attach to moon", ["Control", "m"], () => this.attached = () => this.moon);
     // this.new_line();
+    this.key_triggered_button('kick', ['t'], () => {
+      this.kick = true;
+      this.kick_t = new Date().getTime();
+    });
     this.key_triggered_button(
-      'kick',
-      ['t'],
-      () => (this.kick = true),
-      (this.kick_t = new Date().getTime())
+      `toggle difficulty`,
+      ['g'],
+      () => {
+        this.isGoalieRandom = !this.isGoalieRandom;
+        if (this.isGoalieRandom) {
+          this.goalie_speed += 5;
+        } else {
+          this.goalie_speed -= 5;
+        }
+      }
     );
   }
 
@@ -480,6 +498,16 @@ export class Assignment3 extends Scene {
         .times(Mat4.rotation((1 / 4) * Math.sin(animation_speed * t), 1, 0, 0));
     }
 
+    if (animation == 'defending') {
+      start_transform = start_transform.times(
+        Mat4.translation(
+          0,
+          -1 / 10 + -(1 / 10) * Math.sin(animation_speed * t),
+          0
+        )
+      );
+    }
+
     // left leg
     // final position
     let leftLeg_transform = start_transform.times(
@@ -499,6 +527,21 @@ export class Assignment3 extends Scene {
       leftLeg_transform = leftLeg_transform
         .times(Mat4.translation(0, 2 * leg_length, 0))
         .times(Mat4.rotation(2 * Math.sin(animation_speed * t), 1, 0, 0))
+        .times(Mat4.translation(0, -2 * leg_length, 0));
+      // -------------------
+    }
+
+    if (animation == 'defending') {
+      leftLeg_transform = leftLeg_transform
+        .times(Mat4.translation(0, 2 * leg_length, 0))
+        .times(
+          Mat4.rotation(
+            -1 / 10 + -(1 / 10) * Math.sin(animation_speed * t),
+            0,
+            0,
+            1
+          )
+        )
         .times(Mat4.translation(0, -2 * leg_length, 0));
       // -------------------
     }
@@ -558,6 +601,23 @@ export class Assignment3 extends Scene {
         .times(Mat4.translation(0, -2 * leg_length, 0));
       // -------------------
     }
+
+    if (animation == 'defending') {
+      rightLeg_transform = rightLeg_transform
+        // rotation animation
+        .times(Mat4.translation(0, 2 * leg_length, 0))
+        .times(
+          Mat4.rotation(
+            1 / 10 + (1 / 10) * Math.sin(animation_speed * t),
+            0,
+            0,
+            1
+          )
+        )
+        .times(Mat4.translation(0, -2 * leg_length, 0));
+      // -------------------
+    }
+
     // model scaling
     rightLeg_transform = rightLeg_transform
       .times(Mat4.scale(leg_width, leg_length, leg_width))
@@ -646,6 +706,21 @@ export class Assignment3 extends Scene {
       // -----------------
     }
 
+    if (animation == 'defending') {
+      leftArm_transform = leftArm_transform
+        .times(Mat4.translation(0, arm_length * 0.8, 0))
+        .times(
+          Mat4.rotation(
+            -1 / 5 + (-1 / 5) * Math.sin(animation_speed * t),
+            0,
+            0,
+            1
+          )
+        )
+        .times(Mat4.translation(0, -arm_length * 0.8, 0));
+      // -----------------
+    }
+
     // model scaling
     leftArm_transform = leftArm_transform.times(
       Mat4.scale(arm_width, arm_length, arm_width)
@@ -682,6 +757,20 @@ export class Assignment3 extends Scene {
         .times(Mat4.translation(0, -arm_length * 0.8, 0));
       // -----------------
     }
+    if (animation == 'defending') {
+      rightArm_transform = rightArm_transform
+        .times(Mat4.translation(0, arm_length * 0.8, 0))
+        .times(
+          Mat4.rotation(
+            1 / 5 + (1 / 5) * Math.sin(animation_speed * t),
+            0,
+            0,
+            1
+          )
+        )
+        .times(Mat4.translation(0, -arm_length * 0.8, 0));
+      // -----------------
+    }
 
     // model scaling
     rightArm_transform = rightArm_transform.times(
@@ -710,16 +799,37 @@ export class Assignment3 extends Scene {
   }
 
   display(context, program_state) {
+    const t = program_state.animation_time / 1000,
+      dt = program_state.animation_delta_time / 1000;
+
     this.draw_stadium(context, program_state);
     this.draw_goal(context, program_state);
     this.draw_ball(context, program_state);
+
+    // goalie
     let start_transform = Mat4.identity();
+
+    if (this.isGoalieRandom) {
+      if (this.goalie_random_timer > this.goalieDirChangeFrequency) {
+        this.goalie_direction = Math.random() < 0.5 ? -1 : 1;
+        this.goalie_random_timer = 0;
+      }
+      this.goalie_random_timer += dt;
+    }
+    if (this.goalie_position > 8) {
+      this.goalie_direction = -1;
+    } else if (this.goalie_position < -8) {
+      this.goalie_direction = 1;
+    }
+    this.goalie_position += this.goalie_direction * this.goalie_speed * dt;
+
     start_transform = start_transform
-      .times(Mat4.translation(49, 0, 0))
+      .times(Mat4.translation(49, 0, this.goalie_position))
       .times(Mat4.rotation(-1.5, 0, 1, 0))
       .times(Mat4.scale(1 / 2, 1 / 2, 1 / 2));
-    this.draw_player(context, program_state, start_transform, '');
+    this.draw_player(context, program_state, start_transform, 'defending');
 
+    // player
     start_transform = Mat4.identity();
     start_transform = start_transform
       .times(Mat4.translation(35, 0, -2))
@@ -727,7 +837,6 @@ export class Assignment3 extends Scene {
       .times(Mat4.scale(1 / 2, 1 / 2, 1 / 2));
     this.draw_player(context, program_state, start_transform, 'kicking');
   }
-  
 }
 
 class Gouraud_Shader extends Shader {
