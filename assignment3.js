@@ -48,6 +48,7 @@ export class Assignment3 extends Scene {
       moon: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(
         1
       ),
+      cone: new defs.Cone_Tip(3, 3, [0, 1]),
     };
 
     // *** Materials
@@ -202,7 +203,7 @@ export class Assignment3 extends Scene {
     }
 
     program_state.lights = sceneLights;
-    console.log(program_state.lights);
+    //console.log(program_state.lights);
 
     let concerete_transform = model_transform
       .times(Mat4.translation(0, -0.1, 0))
@@ -348,7 +349,7 @@ export class Assignment3 extends Scene {
         //time = ((new Date().getTime()) - this.kick_t)%10;
         //console.log(time);
         ball_transform = ball_transform.times(
-          Mat4.translation(time * Math.cos(0.5) + 30, time * Math.sin(0.5), 0)
+          Mat4.translation(t * Math.cos(0.5) + 30, t * Math.sin(0.5), 0)
         );
         //the time is always running and therefore the ball teleports. need to keep time 0 until clicked.
 
@@ -370,15 +371,16 @@ export class Assignment3 extends Scene {
           .times(Mat4.scale(1, 0.1, 0.1))
           .times(Mat4.translation(1, 1, 0));
         let point_transform = model_transform
-          .times(Mat4.translation(39, 0.5, 0))
-          .times(Mat4.rotation(Math.PI / 4, 0, 1, 0));
+          .times(Mat4.translation(40, 0.8, 0.1))
+            .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+            .times(Mat4.scale(0.5, 0.5, 0.5));
         this.shapes.cube.draw(
           context,
           program_state,
           guide_transform,
           this.materials.test.override({ color: hex_color('#F22431') })
         );
-        this.shapes.triangle.draw(
+        this.shapes.cone.draw(
           context,
           program_state,
           point_transform,
@@ -727,7 +729,7 @@ export class Assignment3 extends Scene {
       .times(Mat4.scale(1 / 2, 1 / 2, 1 / 2));
     this.draw_player(context, program_state, start_transform, 'kicking');
   }
-  
+
 }
 
 class Gouraud_Shader extends Shader {
