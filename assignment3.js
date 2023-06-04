@@ -1,3 +1,4 @@
+import { Body, Simulation } from './examples/collisions-demo.js';
 import { defs, tiny } from './examples/common.js';
 
 const {
@@ -19,7 +20,7 @@ const {
 } = tiny;
 const { Textured_Phong } = defs;
 
-export class Assignment3 extends Scene {
+export class Assignment3 extends Simulation {
   constructor() {
     // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
     super();
@@ -82,48 +83,43 @@ export class Assignment3 extends Scene {
       }),
     };
 
-      this.initial_camera_location = Mat4.look_at(
+    this.initial_camera_location = Mat4.look_at(
       vec3(20, 8, 0),
       vec3(50, 0, 0),
       vec3(0, 1, 0)
     );
     this.kick = false;
-    this.ball_in_air=false;
-    this.time_of_kick=0;
+    this.ball_in_air = false;
+    this.time_of_kick = 0;
 
     //The "power" of the kick is equivilant to the intitial velocity of the ball before it's projectile motion
-    this.power=10;
+    this.power = 10;
     //the lr (left-right) allows us to shift where the ball ends up on our kick along the horizontal
-    this.lr_angle=0;
+    this.lr_angle = 0;
 
     //the ud (up-down) allows us to shit where the ball ends up on our kick up and down
-    this.ud_angle=0;
+    this.ud_angle = 0;
     //The amount of gravity on our planet!
-    this.gravity=4;
-
+    this.gravity = 4;
 
     this.goal = false;
     this.score = 0;
   }
 
-  handleAngleUp()
-  {
+  handleAngleUp() {
     //Only update when the ball hasn't been kicked or when it's not in the air
-    if (!this.ball_in_air && !this.kick)
-    {
+    if (!this.ball_in_air && !this.kick) {
       //Increment the angle by 5 degrees
-      this.ud_angle=this.ud_angle+0.087;
+      this.ud_angle = this.ud_angle + 0.087;
 
       //If it's now over our limit (40 degrees), set it to it back down to 40 degrees
-      if (this.ud_angle>0.69)
-      {
-        this.ud_angle=0.69
+      if (this.ud_angle > 0.69) {
+        this.ud_angle = 0.69;
       }
-      console.log(this.ud_angle)
+      console.log(this.ud_angle);
     }
   }
-  handleAngleDown()
-  {
+  handleAngleDown() {
     //Only update when the ball hasn't been kicked or when it's not in the air
     if (!this.ball_in_air && !this.kick) {
       //Decrement the angle by 5 degrees
@@ -133,63 +129,54 @@ export class Assignment3 extends Scene {
       if (this.ud_angle < 0.02) {
         this.ud_angle = 0;
       }
-      console.log(this.ud_angle)
+      console.log(this.ud_angle);
     }
   }
-  handleAngleLeft()
-  {
+  handleAngleLeft() {
     //Only update when the ball hasn't been kicked or when it's not in the air
     if (!this.ball_in_air && !this.kick) {
       //Decrement the angle by 5 degrees
       this.lr_angle = this.lr_angle + 0.087;
 
       //If it's below zero degrees, then set it back to our limit of zero
-      if (this.lr_angle > Math.PI/4) {
-        this.lr_angle = Math.PI/4;
+      if (this.lr_angle > Math.PI / 4) {
+        this.lr_angle = Math.PI / 4;
       }
-      console.log(this.lr_angle)
+      console.log(this.lr_angle);
     }
   }
-  handleAngleRight()
-  {
+  handleAngleRight() {
     if (!this.ball_in_air && !this.kick) {
       //Decrement the angle by 5 degrees
       this.lr_angle = this.lr_angle - 0.087;
 
       //If it's below zero degrees, then set it back to our limit of zero
-      if (this.lr_angle < (-1*Math.PI/4)) {
-        this.lr_angle = -1*Math.PI/4;
+      if (this.lr_angle < (-1 * Math.PI) / 4) {
+        this.lr_angle = (-1 * Math.PI) / 4;
       }
-      console.log(this.lr_angle)
+      console.log(this.lr_angle);
     }
   }
 
   //This is to be used when a collision is detected and we need to line things up for the next shot...we will have to do this when resetting the game state
-  resetGoalState()
-  {
+  resetGoalState() {
     this.kick = false;
-    this.ball_in_air=false;
-    this.time_of_kick=0;
+    this.ball_in_air = false;
+    this.time_of_kick = 0;
 
     //The "power" of the kick is equivilant to the intitial velocity of the ball before it's projectile motion
-    this.power=10;
+    this.power = 10;
     //the lr (left-right) allows us to shift where the ball ends up on our kick along the horizontal
-    this.lr_angle=0;
+    this.lr_angle = 0;
 
     //the ud (up-down) allows us to shit where the ball ends up on our kick up and down
-    this.ud_angle=0;
+    this.ud_angle = 0;
     //The amount of gravity on our planet!
-    this.gravity=4;
-
+    this.gravity = 4;
   }
-  handleIncreasePower()
-  {
-  }
+  handleIncreasePower() {}
 
-  handleDecreasePower()
-  {
-  }
-
+  handleDecreasePower() {}
 
   make_control_panel() {
     // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
@@ -209,30 +196,14 @@ export class Assignment3 extends Scene {
       () => (this.kick = !this.ball_in_air)
     );
     //
-    this.key_triggered_button(
-        'aim_up',
-        ['9'],
-        () => this.handleAngleUp()
+    this.key_triggered_button('aim_up', ['9'], () => this.handleAngleUp());
+    this.key_triggered_button('aim_down', ['8'], () => this.handleAngleDown());
+    this.key_triggered_button('aim_left', ['7'], () => this.handleAngleLeft());
+    this.key_triggered_button('aim_right', ['6'], () =>
+      this.handleAngleRight()
     );
-    this.key_triggered_button(
-        'aim_down',
-        ['8'],
-        () =>this.handleAngleDown()
-    );
-    this.key_triggered_button(
-        'aim_left',
-        ['7'],
-        () =>this.handleAngleLeft()
-    );
-    this.key_triggered_button(
-        'aim_right',
-        ['6'],
-        () =>this.handleAngleRight()
-    );
-    this.key_triggered_button(
-        'collision detected',
-        ['b'],
-        () =>this.resetGoalState()
+    this.key_triggered_button('collision detected', ['b'], () =>
+      this.resetGoalState()
     );
   }
 
@@ -528,77 +499,99 @@ export class Assignment3 extends Scene {
       this.goal = false;
     }
   }
-  draw_ball_2(context, program_state)
-  {
+  draw_ball_2(context, program_state) {
     if (!context.scratchpad.controls) {
       this.children.push(
-          (context.scratchpad.controls = new defs.Movement_Controls())
+        (context.scratchpad.controls = new defs.Movement_Controls())
       );
       // Define the global camera and projection matrices, which are stored in program_state.
       program_state.set_camera(this.initial_camera_location);
     }
     program_state.projection_transform = Mat4.perspective(
-        Math.PI / 4,
-        context.width / context.height,
-        0.1,
-        1000
+      Math.PI / 4,
+      context.width / context.height,
+      0.1,
+      1000
     );
     let t = program_state.animation_time / 1000,
-        dt = program_state.animation_delta_time / 1000;
+      dt = program_state.animation_delta_time / 1000;
 
     let model_transform = Mat4.identity();
 
-    let ball_transform = model_transform
-        .times(Mat4.translation(38, 0.5, 0));
-    ball_transform=ball_transform.times(Mat4.rotation(this.lr_angle,0,1,0));
+    let ball_transform = model_transform.times(Mat4.translation(38, 0.5, 0));
+    ball_transform = ball_transform.times(
+      Mat4.rotation(this.lr_angle, 0, 1, 0)
+    );
 
-    if (this.kick)
-    {
-      this.ball_in_air=true;
-      this.time_of_kick=t;
-      console.log("Kicked!");
-
+    if (this.kick) {
+      this.ball_in_air = true;
+      this.time_of_kick = t;
+      console.log('Kicked!');
     }
-    if (this.ball_in_air)
-    {
-      let curr_time=(t-this.time_of_kick)/2;
+    if (this.ball_in_air) {
+      let curr_time = (t - this.time_of_kick) / 2;
 
-      console.log("Ball in Motion!");
+      console.log('Ball in Motion!');
 
       //Ball is on the ground
-      if (this.ud_angle === 0)
-      {
-        let initial_velocity=this.power;
-        let delta_x = initial_velocity*curr_time;
-        ball_transform=ball_transform.times(Mat4.translation(delta_x,0,0));
-      }
-      else
-      {
-        let initial_velocity=this.power;
-        let initial_velocity_x=initial_velocity*Math.cos(this.ud_angle)
-        let initial_velocity_y = initial_velocity*Math.sin(this.ud_angle);
+      if (this.ud_angle === 0) {
+        let initial_velocity = this.power;
+        let delta_x = initial_velocity * curr_time;
+        ball_transform = ball_transform.times(Mat4.translation(delta_x, 0, 0));
+      } else {
+        let initial_velocity = this.power;
+        let initial_velocity_x = initial_velocity * Math.cos(this.ud_angle);
+        let initial_velocity_y = initial_velocity * Math.sin(this.ud_angle);
 
         let gravity = this.gravity;
 
-        let delta_x = initial_velocity_x*curr_time;
-        let delta_y=(-0.5*gravity*curr_time*curr_time)+(initial_velocity_y*curr_time);
+        let delta_x = initial_velocity_x * curr_time;
+        let delta_y =
+          -0.5 * gravity * curr_time * curr_time +
+          initial_velocity_y * curr_time;
 
-        ball_transform=ball_transform.times(Mat4.translation(delta_x,delta_y,0));
+        ball_transform = ball_transform.times(
+          Mat4.translation(delta_x, delta_y, 0)
+        );
       }
     }
 
+    this.kick = false;
 
-    this.kick=false;
-
-    ball_transform=ball_transform.times(Mat4.scale(0.5,0.5,0.5));
+    ball_transform = ball_transform.times(Mat4.scale(0.5, 0.5, 0.5));
 
     this.shapes.ball.draw(
-        context,
-        program_state,
-        ball_transform,
-        this.materials.ball
+      context,
+      program_state,
+      ball_transform,
+      this.materials.ball
     );
+  }
 
+  update_state(dt) {
+    // update_state():  Override the base time-stepping code to say what this particular
+    // scene should do to its bodies every frame -- including applying forces.
+    // Generate additional moving bodies if there ever aren't enough:
+    if (this.bodies.length < 1) {
+      this.bodies.push(
+        new Body(this.shapes.ball, this.materials.ball, vec3(1, 1, 1)).emplace(
+          Mat4.translation(38, 5, 0),
+          vec3(0, 10, 2),
+          1
+        )
+      );
+    }
+
+    for (let b of this.bodies) {
+      // Gravity on Earth, where 1 unit in world space = 1 meter:
+      console.log(b);
+      b.linear_velocity[1] += dt * -9.8;
+      // If about to fall through floor, reverse y velocity:
+      if (b.center[1] < 0 && b.linear_velocity[1] < 0)
+        b.linear_velocity[1] *= -0.8;
+      if (b.center[2] < -8 || b.center[2] > 8)
+        b.linear_velocity[2] *= -1;
+    }
   }
 
   draw_goal(context, program_state) {
@@ -905,6 +898,8 @@ export class Assignment3 extends Scene {
   }
 
   display(context, program_state) {
+    super.display(context, program_state);
+
     this.draw_stadium(context, program_state);
     this.draw_goal(context, program_state);
     this.draw_ball_2(context, program_state);
@@ -922,7 +917,6 @@ export class Assignment3 extends Scene {
       .times(Mat4.scale(1 / 2, 1 / 2, 1 / 2));
     this.draw_player(context, program_state, start_transform, 'kicking');
   }
-  
 }
 
 class Gouraud_Shader extends Shader {
