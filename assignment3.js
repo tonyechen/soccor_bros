@@ -74,11 +74,12 @@ export class Assignment3 extends Scene {
         specularity: 0.2,
         texture: new Texture('assets/grass_texture.jpg'),
       }),
-      ball: new Material(new Gouraud_Shader(), {
-        ambient: 0.8,
-        diffusivity: 1,
-        color: hex_color('#ffffff'),
-        specularity: 0,
+      ball: new Material(new Textured_Phong(), {
+        ambient: 1,
+        diffusivity: 0.2,
+        specularity: 0.2,
+        color: hex_color('#000000'),
+        texture: new Texture('assets/soccer_ball_texture.jpg'),
       }),
     };
 
@@ -184,10 +185,20 @@ export class Assignment3 extends Scene {
   }
   handleIncreasePower()
   {
+    this.power=this.power+1;
+    if (this.power>20)
+    {
+      this.power=20;
+    }
   }
 
   handleDecreasePower()
   {
+    this.power=this.power-1;
+    if (this.power<5)
+    {
+      this.power=5;
+    }
   }
 
 
@@ -233,6 +244,16 @@ export class Assignment3 extends Scene {
         'collision detected',
         ['b'],
         () =>this.resetGoalState()
+    );
+    this.key_triggered_button(
+        'increase power',
+        ['z'],
+        () =>this.handleIncreasePower()
+    );
+    this.key_triggered_button(
+        'decrease power',
+        ['x'],
+        () =>this.handleDecreasePower()
     );
   }
 
@@ -550,7 +571,7 @@ export class Assignment3 extends Scene {
 
     let ball_transform = model_transform
         .times(Mat4.translation(38, 0.5, 0));
-    ball_transform=ball_transform.times(Mat4.rotation(this.lr_angle,0,1,0));
+
 
     if (this.kick)
     {
@@ -561,10 +582,9 @@ export class Assignment3 extends Scene {
     }
     if (this.ball_in_air)
     {
+      ball_transform=ball_transform.times(Mat4.rotation(this.lr_angle,0,1,0));
+
       let curr_time=(t-this.time_of_kick)/2;
-
-      console.log("Ball in Motion!");
-
       //Ball is on the ground
       if (this.ud_angle === 0)
       {
@@ -585,12 +605,12 @@ export class Assignment3 extends Scene {
 
         ball_transform=ball_transform.times(Mat4.translation(delta_x,delta_y,0));
       }
+      let ball_rotation = 4*Math.PI*curr_time*(2);
+      ball_transform=ball_transform.times(Mat4.rotation(ball_rotation,0,0,1));
     }
 
-
-    this.kick=false;
-
     ball_transform=ball_transform.times(Mat4.scale(0.5,0.5,0.5));
+
 
     this.shapes.ball.draw(
         context,
@@ -598,6 +618,8 @@ export class Assignment3 extends Scene {
         ball_transform,
         this.materials.ball
     );
+
+    this.kick=false;
 
   }
 
@@ -1109,70 +1131,3 @@ class Gouraud_Shader extends Shader {
   }
 }
 
-class Ring_Shader extends Shader {
-  update_GPU(
-    context,
-    gpu_addresses,
-    graphics_state,
-    model_transform,
-    material
-  ) {
-    // update_GPU():  Defining how to synchronize our JavaScript's variables to the GPU's:
-    const [P, C, M] = [
-        graphics_state.projection_transform,
-        graphics_state.camera_inverse,
-        model_transform,
-      ],
-      PCM = P.times(C).times(M);
-    context.uniformMatrix4fv(
-      gpu_addresses.model_transform,
-      false,
-      Matrix.flatten_2D_to_1D(model_transform.transposed())
-    );
-    context.uniformMatrix4fv(
-      gpu_addresses.projection_camera_model_transform,
-      false,
-      Matrix.flatten_2D_to_1D(PCM.transposed())
-    );
-  }
-
-  shared_glsl_code() {
-    // ********* SHARED CODE, INCLUDED IN BOTH SHADERS *********
-    return `
-        precision mediump float;
-        varying vec4 point_position;
-        varying vec4 center;
-        `;
-  }
-
-  vertex_glsl_code() {
-    // ********* VERTEX SHADER *********
-    // TODO:  Complete the main function of the vertex shader (Extra Credit Part II).
-    return (
-      this.shared_glsl_code() +
-      `
-        attribute vec3 position;
-        uniform mat4 model_transform;
-        uniform mat4 projection_camera_model_transform;
-        
-        void main(){
-          center = model_transform * vec4(0.0, 0.0, 0.0, 1.0);
-          point_position = model_transform * vec4(position, 1.0);
-          gl_Position = projection_camera_model_transform * vec4(position, 1.0);          
-        }`
-    );
-  }
-
-  fragment_glsl_code() {
-    // ********* FRAGMENT SHADER *********
-    // TODO:  Complete the main function of the fragment shader (Extra Credit Part II).
-    return (
-      this.shared_glsl_code() +
-      `
-        void main(){
-            float scalar = sin(18.01 * distance(point_position.xyz, center.xyz));
-            gl_FragColor = scalar * vec4(0.6078, 0.3961, 0.098, 1.0);
-        }`
-    );
-  }
-}
