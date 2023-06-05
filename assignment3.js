@@ -95,7 +95,7 @@ export class Assignment3 extends Scene {
     this.time_of_kick=0;
 
     //The "power" of the kick is equivilant to the intitial velocity of the ball before it's projectile motion
-    this.power=10;
+    this.power=20;
     //the lr (left-right) allows us to shift where the ball ends up on our kick along the horizontal
     this.lr_angle=0;
 
@@ -103,7 +103,7 @@ export class Assignment3 extends Scene {
     this.ud_angle=0;
     this.miss = false;
     //The amount of gravity on our planet!
-    this.gravity=4;
+    this.gravity=9.8;
     this.point_transform = Mat4.identity().times(Mat4.translation(40, 0.8, 0.1))
         .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
         .times(Mat4.scale(0.5, 0.5, 0.5));
@@ -238,14 +238,14 @@ export class Assignment3 extends Scene {
     this.time_of_kick=0;
 
     //The "power" of the kick is equivilant to the intitial velocity of the ball before it's projectile motion
-    this.power=10;
+    this.power=20;
     //the lr (left-right) allows us to shift where the ball ends up on our kick along the horizontal
     this.lr_angle=0;
 
     //the ud (up-down) allows us to shit where the ball ends up on our kick up and down
     this.ud_angle=0;
     //The amount of gravity on our planet!
-    this.gravity=4;
+    this.gravity=9.8;
     this.point_transform = Mat4.identity().times(Mat4.translation(40, 0.8, 0.1))
         .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
         .times(Mat4.scale(0.5, 0.5, 0.5));
@@ -667,7 +667,7 @@ export class Assignment3 extends Scene {
     {
       ball_transform=ball_transform.times(Mat4.rotation(this.lr_angle,0,1,0));
 
-      let curr_time=(t-this.time_of_kick)/2;
+      let curr_time= t - this.time_of_kick;
       //Ball is on the ground
       if (this.ud_angle === 0)
       {
