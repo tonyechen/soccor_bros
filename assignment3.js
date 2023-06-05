@@ -42,12 +42,14 @@ export class Assignment3 extends Scene {
         3
       ),
       cone: new defs.Cone_Tip(3, 3, [0, 1]),
+      guide: new defs.Axis_Arrows(),
       triangle: new defs.Triangle(),
       ring: new defs.Torus(50, 50),
       planet4: new defs.Subdivision_Sphere(4),
       moon: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(
         1
       ),
+
     };
 
     // *** Materials
@@ -757,7 +759,6 @@ export class Assignment3 extends Scene {
     );
 
     this.kick=false;
-
   }
 
   draw_goal(context, program_state) {
@@ -1363,4 +1364,3 @@ class Gouraud_Shader extends Shader {
     this.send_gpu_state(context, gpu_addresses, gpu_state, model_transform);
   }
 }
-
