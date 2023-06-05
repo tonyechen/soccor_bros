@@ -41,7 +41,7 @@ export class Assignment3 extends Scene {
       ball: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(
         3
       ),
-      guide: new defs.Axis_Arrows(),
+      cone: new defs.Cone_Tip(3, 3, [0, 1]),
       triangle: new defs.Triangle(),
       ring: new defs.Torus(50, 50),
       planet4: new defs.Subdivision_Sphere(4),
@@ -98,16 +98,25 @@ export class Assignment3 extends Scene {
 
     //the ud (up-down) allows us to shit where the ball ends up on our kick up and down
     this.ud_angle=0;
+    this.miss = false;
     //The amount of gravity on our planet!
     this.gravity=4;
-
-
+    this.point_transform = Mat4.identity().times(Mat4.translation(40, 0.8, 0.1))
+        .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+        .times(Mat4.scale(0.5, 0.5, 0.5));
+    this._transform = Mat4.identity().times(Mat4.translation(38, 0.5, 0))
+        .times(Mat4.scale(1, 0.1, 0.1))
+        .times(Mat4.translation(1, 1, 0));
     this.goal = false;
     this.score = 0;
   }
 
+  billboard(context, program_state) {
+
+  }
   handleAngleUp()
   {
+    //this.ud_prev = this.ud_angle;
     //Only update when the ball hasn't been kicked or when it's not in the air
     if (!this.ball_in_air && !this.kick)
     {
@@ -120,6 +129,21 @@ export class Assignment3 extends Scene {
         this.ud_angle=0.69
       }
       console.log(this.ud_angle)
+
+      this._transform =
+          Mat4.identity().times(Mat4.translation(38, 0.5, 0))
+          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+              .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+          .times(Mat4.scale(1, 0.1, 0.1))
+          .times(Mat4.translation(1, 1, 0));
+
+      this.point_transform =
+          Mat4.identity().times(Mat4.translation(37.7, 0.8, 0.1))
+          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+              .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+          .times(Mat4.translation(2.3, 0, 0))
+          .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+          .times(Mat4.scale(0.5, 0.5, 0.5));
     }
   }
   handleAngleDown()
@@ -134,6 +158,17 @@ export class Assignment3 extends Scene {
         this.ud_angle = 0;
       }
       console.log(this.ud_angle)
+      this._transform =Mat4.identity().times(Mat4.translation(38, 0.5, 0))
+          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+          .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+          .times(Mat4.scale(1, 0.1, 0.1))
+          .times(Mat4.translation(1, 1, 0));
+      this.point_transform = Mat4.identity().times(Mat4.translation(37.7, 0.8, 0.1))
+          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+          .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+          .times(Mat4.translation(2.3, 0, 0))
+          .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+          .times(Mat4.scale(0.5, 0.5, 0.5));
     }
   }
   handleAngleLeft()
@@ -148,6 +183,17 @@ export class Assignment3 extends Scene {
         this.lr_angle = Math.PI/4;
       }
       console.log(this.lr_angle)
+      this._transform =Mat4.identity().times(Mat4.translation(38, 0.5, 0))
+          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+          .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+          .times(Mat4.scale(1, 0.1, 0.1))
+          .times(Mat4.translation(1, 1, 0));
+      this.point_transform = Mat4.identity().times(Mat4.translation(37.7, 0.8, 0.1))
+          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+          .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+          .times(Mat4.translation(2.3, 0, 0))
+          .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+          .times(Mat4.scale(0.5, 0.5, 0.5));
     }
   }
   handleAngleRight()
@@ -161,6 +207,17 @@ export class Assignment3 extends Scene {
         this.lr_angle = -1*Math.PI/4;
       }
       console.log(this.lr_angle)
+      this._transform =Mat4.identity().times(Mat4.translation(38, 0.5, 0))
+          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+          .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+          .times(Mat4.scale(1, 0.1, 0.1))
+          .times(Mat4.translation(1, 1, 0));
+      this.point_transform = Mat4.identity().times(Mat4.translation(37.7, 0.8, 0.1))
+          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+          .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+          .times(Mat4.translation(2.3, 0, 0))
+          .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+          .times(Mat4.scale(0.5, 0.5, 0.5));
     }
   }
 
@@ -233,6 +290,16 @@ export class Assignment3 extends Scene {
         'collision detected',
         ['b'],
         () =>this.resetGoalState()
+    );
+    this.key_triggered_button(
+        'increase power',
+        ['p'],
+        () => (this.power= this.power+1)
+    );
+    this.key_triggered_button(
+        'decrease power',
+        ['q'],
+        () => (this.power= this.power-1)
     );
   }
 
@@ -488,7 +555,7 @@ export class Assignment3 extends Scene {
         ball_transform = ball_transform.times(Mat4.rotation(-t, 0, 0.5, 1));
         //else
       } else {
-        let guide_transform = model_transform
+        let _transform = model_transform
           .times(Mat4.translation(38, 0.5, 0))
           .times(Mat4.scale(1, 0.1, 0.1))
           .times(Mat4.translation(1, 1, 0));
@@ -498,7 +565,7 @@ export class Assignment3 extends Scene {
         this.shapes.cube.draw(
           context,
           program_state,
-          guide_transform,
+          _transform,
           this.materials.test.override({ color: hex_color('#F22431') })
         );
         this.shapes.triangle.draw(
@@ -557,7 +624,17 @@ export class Assignment3 extends Scene {
       this.ball_in_air=true;
       this.time_of_kick=t;
       console.log("Kicked!");
-
+      this.miss = false;
+    }
+    else{
+      this.shapes.cube.draw(
+          context,
+          program_state,
+          this._transform,
+          this.materials.test.override({ color: hex_color('#F22431') }));
+      this.shapes.cone.draw(context, program_state,
+          this.point_transform,
+          this.materials.test.override({ color: hex_color('#F22431') }));
     }
     if (this.ball_in_air)
     {
@@ -584,6 +661,23 @@ export class Assignment3 extends Scene {
         let delta_y=(-0.5*gravity*curr_time*curr_time)+(initial_velocity_y*curr_time);
 
         ball_transform=ball_transform.times(Mat4.translation(delta_x,delta_y,0));
+      }
+      if (ball_transform.valueOf()[0][3] > 50.0 && ball_transform.valueOf()[1][3] < 5.6
+          && ball_transform.valueOf()[2][3] < 10
+          && ball_transform.valueOf()[2][3] > -10) {
+        // trying to figure it out
+        this.goal = true;
+        this.score = this.score + 1;
+        this.resetGoalState();
+        this.ball_in_air = false;
+        //ball_transform = model_transform.times(Mat4.translation(55 , 2.2, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
+      }
+      else if(ball_transform.valueOf()[0][3] > 50.0 && ball_transform.valueOf()[1][3] > 5.6 ||
+          ball_transform.valueOf()[0][3] > 50.0 && ball_transform.valueOf()[2][3] > 10
+          || ball_transform.valueOf()[0][3] > 50.0 && ball_transform.valueOf()[2][3] < -10){
+        this.resetGoalState();
+        this.ball_in_air = false;
+        this.miss = true;
       }
     }
 
@@ -906,6 +1000,7 @@ export class Assignment3 extends Scene {
 
   display(context, program_state) {
     this.draw_stadium(context, program_state);
+    this.billboard(context, program_state);
     this.draw_goal(context, program_state);
     this.draw_ball_2(context, program_state);
     let start_transform = Mat4.identity();
