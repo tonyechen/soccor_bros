@@ -237,7 +237,12 @@ export class Assignment3 extends Scene {
     this.ud_angle=0;
     //The amount of gravity on our planet!
     this.gravity=4;
-
+    this.point_transform = Mat4.identity().times(Mat4.translation(40, 0.8, 0.1))
+        .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+        .times(Mat4.scale(0.5, 0.5, 0.5));
+    this._transform = Mat4.identity().times(Mat4.translation(38, 0.5, 0))
+        .times(Mat4.scale(1, 0.1, 0.1))
+        .times(Mat4.translation(1, 1, 0));
   }
   handleIncreasePower()
   {
@@ -626,16 +631,7 @@ export class Assignment3 extends Scene {
       console.log("Kicked!");
       this.miss = false;
     }
-    else{
-      this.shapes.cube.draw(
-          context,
-          program_state,
-          this._transform,
-          this.materials.test.override({ color: hex_color('#F22431') }));
-      this.shapes.cone.draw(context, program_state,
-          this.point_transform,
-          this.materials.test.override({ color: hex_color('#F22431') }));
-    }
+
     if (this.ball_in_air)
     {
       let curr_time=(t-this.time_of_kick)/2;
@@ -679,6 +675,16 @@ export class Assignment3 extends Scene {
         this.ball_in_air = false;
         this.miss = true;
       }
+    }
+    else{
+      this.shapes.cube.draw(
+          context,
+          program_state,
+          this._transform,
+          this.materials.test.override({ color: hex_color('#F22431') }));
+      this.shapes.cone.draw(context, program_state,
+          this.point_transform,
+          this.materials.test.override({ color: hex_color('#F22431') }));
     }
 
 
@@ -1015,7 +1021,7 @@ export class Assignment3 extends Scene {
       .times(Mat4.translation(35, 0, -2))
       .times(Mat4.rotation(1.2, 0, 1, 0))
       .times(Mat4.scale(1 / 2, 1 / 2, 1 / 2));
-    this.draw_player(context, program_state, start_transform, 'kicking');
+    this.draw_player(context, program_state, start_transform, '');
   }
   
 }
