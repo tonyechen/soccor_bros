@@ -682,13 +682,27 @@ export class Assignment3 extends Scene {
           console.log(ball_transform.valueOf()[2][3]);
           console.log(this.goalie_position);
           //if goalie legs height, then use width of legs, if arms, use arm width, if head use only head width
-            if(ball_transform.valueOf()[1][3] < 4.5 && ball_transform.valueOf()[2][3] < (this.goalie_position + 3)
-                && ball_transform.valueOf()[2][3] > (this.goalie_position - 3))
+          // widths need to be checked with Tony
+            if(ball_transform.valueOf()[1][3] < 1.2 && ball_transform.valueOf()[2][3] < (this.goalie_position+1)
+                && ball_transform.valueOf()[2][3] > (this.goalie_position -1))
             {
                 this.resetGoalState();
                 this.ball_in_air = false;
                 this.miss = true;
                 console.log("SAVED");
+            }
+            else if(ball_transform.valueOf()[1][3] > 1.2 && ball_transform.valueOf()[1][3] < 3.2
+                && ball_transform.valueOf()[2][3] < (this.goalie_position - 1.6)
+                && ball_transform.valueOf()[2][3] > (this.goalie_position + 1.6)){
+              this.resetGoalState();
+              this.ball_in_air = false;
+              this.miss = true;
+              console.log("SAVED");
+            }
+            else if(ball_transform.valueOf()[1][3] > 3.2 && ball_transform.valueOf()[1][3] < 4.2
+                && ball_transform.valueOf()[2][3] < (this.goalie_position - 0.5)
+                && ball_transform.valueOf()[2][3] > (this.goalie_position + 0.5)){
+
             }
             else{
                 this.goal = true;
