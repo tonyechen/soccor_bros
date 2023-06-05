@@ -72,7 +72,7 @@ export class Assignment3 extends Scene {
         ambient: 1,
         diffusivity: 0.2,
         specularity: 0.2,
-        texture: new Texture('assets/grass_texture.jpg'),
+        texture: new Texture('assets/soccer-field.jpg'),
       }),
       ball: new Material(new Textured_Phong(), {
         ambient: 1,
