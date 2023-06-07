@@ -187,6 +187,10 @@ export class Assignment3 extends Scene {
     this.isGoalieRandom = false;
     this.goalie_random_timer = 0;
     this.goalieDirChangeFrequency = 0.5; // change / s
+
+    this.player_kick_finish = true;
+    this.player_kicked = true;
+    this.player_kick_t = 0;
   }
 
   billboard(context, program_state) {}
@@ -701,12 +705,15 @@ export class Assignment3 extends Scene {
 
     if (this.kick) {
       this.ball_in_air = true;
-      this.time_of_kick = t;
+      this.player_kick_t = t;
+      this.player_kick_finish = false;
+      this.player_kicked = false;
       console.log('Kicked!');
       this.miss = false;
     }
 
-    if (this.ball_in_air) {
+    if (this.ball_in_air && this.player_kicked) {
+      console.log('animation ball');
       ball_transform = ball_transform.times(
         Mat4.rotation(this.lr_angle, 0, 1, 0)
       );
@@ -882,16 +889,42 @@ export class Assignment3 extends Scene {
     if (animation === 'running') {
       start_transform = start_transform
         //   .times(Mat4.translation(0, 0, 2 * animation_speed * t))
-        .times(Mat4.rotation((1 / 4) * Math.sin(animation_speed * t), 0, 1, 0))
         .times(
-          Mat4.rotation(-(1 / 10) * Math.sin(animation_speed * t), 1, 0, 1)
+          Mat4.rotation(
+            (1 / 4) * Math.sin(animation_speed * (t - this.player_kick_t)),
+            0,
+            1,
+            0
+          )
+        )
+        .times(
+          Mat4.rotation(
+            -(1 / 10) * Math.sin(animation_speed * (t - this.player_kick_t)),
+            1,
+            0,
+            1
+          )
         );
     }
 
     if (animation == 'kicking') {
       start_transform = start_transform
-        .times(Mat4.rotation(-(1 / 4) * Math.sin(animation_speed * t), 0, 1, 0))
-        .times(Mat4.rotation((1 / 4) * Math.sin(animation_speed * t), 1, 0, 0));
+        .times(
+          Mat4.rotation(
+            -(1 / 4) * Math.sin(animation_speed * (t - this.player_kick_t)),
+            0,
+            1,
+            0
+          )
+        )
+        .times(
+          Mat4.rotation(
+            (1 / 4) * Math.sin(animation_speed * (t - this.player_kick_t)),
+            1,
+            0,
+            0
+          )
+        );
     }
 
     if (animation == 'defending') {
@@ -914,7 +947,14 @@ export class Assignment3 extends Scene {
     if (animation == 'running') {
       leftLeg_transform = leftLeg_transform
         .times(Mat4.translation(0, 2 * leg_length, 0))
-        .times(Mat4.rotation(Math.sin(animation_speed * t), 1, 0, 0))
+        .times(
+          Mat4.rotation(
+            Math.sin(animation_speed * (t - this.player_kick_t)),
+            1,
+            0,
+            0
+          )
+        )
         .times(Mat4.translation(0, -2 * leg_length, 0));
       // -------------------
     }
@@ -922,7 +962,14 @@ export class Assignment3 extends Scene {
     if (animation == 'kicking') {
       leftLeg_transform = leftLeg_transform
         .times(Mat4.translation(0, 2 * leg_length, 0))
-        .times(Mat4.rotation(2 * Math.sin(animation_speed * t), 1, 0, 0))
+        .times(
+          Mat4.rotation(
+            2 * Math.sin(animation_speed * (t - this.player_kick_t)),
+            1,
+            0,
+            0
+          )
+        )
         .times(Mat4.translation(0, -2 * leg_length, 0));
       // -------------------
     }
@@ -1004,7 +1051,14 @@ export class Assignment3 extends Scene {
       rightLeg_transform = rightLeg_transform
         // rotation animation
         .times(Mat4.translation(0, 2 * leg_length, 0))
-        .times(Mat4.rotation(-Math.sin(animation_speed * t), 1, 0, 0))
+        .times(
+          Mat4.rotation(
+            -Math.sin(animation_speed * (t - this.player_kick_t)),
+            1,
+            0,
+            0
+          )
+        )
         .times(Mat4.translation(0, -2 * leg_length, 0));
       // -------------------
     }
@@ -1013,7 +1067,14 @@ export class Assignment3 extends Scene {
       rightLeg_transform = rightLeg_transform
         // rotation animation
         .times(Mat4.translation(0, 2 * leg_length, 0))
-        .times(Mat4.rotation(-(1 / 2) * Math.sin(animation_speed * t), 1, 0, 0))
+        .times(
+          Mat4.rotation(
+            -(1 / 2) * Math.sin(animation_speed * (t - this.player_kick_t)),
+            1,
+            0,
+            0
+          )
+        )
         .times(Mat4.translation(0, -2 * leg_length, 0));
       // -------------------
     }
@@ -1162,14 +1223,28 @@ export class Assignment3 extends Scene {
     if (animation == 'running') {
       leftArm_transform = leftArm_transform
         .times(Mat4.translation(0, arm_length * 0.8, 0))
-        .times(Mat4.rotation(-Math.sin(animation_speed * t), 1, 0, 0))
+        .times(
+          Mat4.rotation(
+            -Math.sin(animation_speed * (t - this.player_kick_t)),
+            1,
+            0,
+            0
+          )
+        )
         .times(Mat4.translation(0, -arm_length * 0.8, 0));
       // -----------------
     }
     if (animation == 'kicking') {
       leftArm_transform = leftArm_transform
         .times(Mat4.translation(0, arm_length * 0.8, 0))
-        .times(Mat4.rotation(Math.sin(animation_speed * t), 1, 1, 0))
+        .times(
+          Mat4.rotation(
+            Math.sin(animation_speed * (t - this.player_kick_t)),
+            1,
+            1,
+            0
+          )
+        )
         .times(Mat4.translation(0, -arm_length * 0.8, 0));
       // -----------------
     }
@@ -1223,14 +1298,28 @@ export class Assignment3 extends Scene {
     if (animation == 'running') {
       rightArm_transform = rightArm_transform
         .times(Mat4.translation(0, arm_length * 0.8, 0))
-        .times(Mat4.rotation(Math.sin(animation_speed * t), 1, 0, 0))
+        .times(
+          Mat4.rotation(
+            Math.sin(animation_speed * (t - this.player_kick_t)),
+            1,
+            0,
+            0
+          )
+        )
         .times(Mat4.translation(0, -arm_length * 0.8, 0));
       // -----------------
     }
     if (animation == 'kicking') {
       rightArm_transform = rightArm_transform
         .times(Mat4.translation(0, arm_length * 0.8, 0))
-        .times(Mat4.rotation(Math.sin(animation_speed * t), -1, 1, 0))
+        .times(
+          Mat4.rotation(
+            Math.sin(animation_speed * (t - this.player_kick_t)),
+            -1,
+            1,
+            0
+          )
+        )
         .times(Mat4.translation(0, -arm_length * 0.8, 0));
       // -----------------
     }
@@ -1351,16 +1440,40 @@ export class Assignment3 extends Scene {
       .times(Mat4.rotation(1.2, 0, 1, 0))
       .times(Mat4.scale(1 / 2, 1 / 2, 1 / 2));
 
-    console.log('this.kick: ', this.kick);
-    console.log('this.ball_in_air: ', this.ball_in_air);
-    if (this.kick) {
-      this.draw_player(
-        context,
-        program_state,
-        start_transform,
-        'player',
-        'kicking'
+    if (!this.player_kick_finish) {
+      let kick_animation_t = t - this.player_kick_t;;
+      start_transform = start_transform.times(
+        Mat4.translation(-kick_animation_t / 8, 0, kick_animation_t)
       );
+      if (kick_animation_t < 3.14) {
+        this.draw_player(
+          context,
+          program_state,
+          start_transform,
+          'player',
+          'running'
+        );
+      } else if (kick_animation_t < 4.71) {
+        this.draw_player(
+          context,
+          program_state,
+          start_transform,
+          'player',
+          'kicking'
+        );
+      } else if (kick_animation_t < 5.5) {
+        this.player_kicked = true;
+        this.time_of_kick = this.player_kick_t + 4.71;
+        this.draw_player(
+          context,
+          program_state,
+          start_transform,
+          'player',
+          'kicking'
+        );
+      } else {
+        this.player_kick_finish = true;
+      }
     } else {
       this.draw_player(context, program_state, start_transform, 'player', '');
     }
