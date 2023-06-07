@@ -705,8 +705,8 @@ export class Assignment3 extends Scene {
         } else if (
           ball_transform.valueOf()[1][3] > 1.2 &&
           ball_transform.valueOf()[1][3] < 3.2 &&
-          ball_transform.valueOf()[2][3] < this.goalie_position - 1.6 &&
-          ball_transform.valueOf()[2][3] > this.goalie_position + 1.6
+          ball_transform.valueOf()[2][3] < this.goalie_position - 2 &&
+          ball_transform.valueOf()[2][3] > this.goalie_position + 2
         ) {
           this.resetGoalState();
           this.ball_in_air = false;
