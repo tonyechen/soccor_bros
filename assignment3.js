@@ -818,7 +818,7 @@ export class Assignment3 extends Scene {
     const head_width = 1;
     const head_height = 1;
 
-    const animation_speed = 2;
+    const animation_speed = 4;
 
     const t = program_state.animation_time / 1000,
         dt = program_state.animation_delta_time / 1000;
@@ -1413,9 +1413,9 @@ export class Assignment3 extends Scene {
     if (!this.player_kick_finish) {
       let kick_animation_t = t - this.player_kick_t;;
       start_transform = start_transform.times(
-        Mat4.translation(-kick_animation_t / 8, 0, kick_animation_t)
+        Mat4.translation(-kick_animation_t / 4, 0, 2 * kick_animation_t)
       );
-      if (kick_animation_t < 3.14) {
+      if (kick_animation_t < 1.57) {
         this.draw_player(
           context,
           program_state,
@@ -1423,7 +1423,7 @@ export class Assignment3 extends Scene {
           'player',
           'running'
         );
-      } else if (kick_animation_t < 4.71) {
+      } else if (kick_animation_t < 2.355) {
         this.draw_player(
           context,
           program_state,
@@ -1431,9 +1431,9 @@ export class Assignment3 extends Scene {
           'player',
           'kicking'
         );
-      } else if (kick_animation_t < 5.5) {
+      } else if (kick_animation_t < 3.14) {
         this.player_kicked = true;
-        this.time_of_kick = this.player_kick_t + 4.71;
+        this.time_of_kick = this.player_kick_t + 2.355;
         this.draw_player(
           context,
           program_state,
@@ -1456,13 +1456,13 @@ export class Assignment3 extends Scene {
       this.draw_text(
           context,
           program_state,
-          `angle Y: ${(this.ud_angle / 3.14) * 180}`,
+          `angle Y: ${Math.floor((this.ud_angle / 3.14) * 180)}`,
           2
       );
       this.draw_text(
           context,
           program_state,
-          `angle X: ${(this.lr_angle / 3.14) * 180}`,
+          `angle X: ${Math.floor((this.lr_angle / 3.14) * 180)}`,
           3
       );
 
