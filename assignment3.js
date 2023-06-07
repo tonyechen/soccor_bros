@@ -88,10 +88,15 @@ export class Assignment3 extends Scene {
     };
 
     this.initial_camera_location = Mat4.look_at(
-        vec3(20, 8, 0),
-        vec3(50, 0, 0),
+        vec3(-100, 100, 100),
+        vec3(10, 0, 0),
         vec3(0, 1, 0)
     );
+
+    this.shootout = Mat4.look_at(
+        vec3(20, 8, 0),
+        vec3(50, 0, 0),
+        vec3(0, 1, 0));
     this.kick = false;
     this.ball_in_air=false;
     this.time_of_kick=0;
@@ -337,6 +342,11 @@ export class Assignment3 extends Scene {
             this.goalie_speed -= 5;
           }
         }
+    );
+    this.key_triggered_button(
+        'start',
+        ['b'],
+        () => this.attached = () => this.shootout
     );
   }
 
@@ -1091,6 +1101,10 @@ export class Assignment3 extends Scene {
     }
     else{
       this.draw_player(context, program_state, start_transform, '');
+    }
+    if (this.attached !== undefined) {
+      // Blend desired camera position with existing camera matrix (from previous frame) to smoothly pull camera towards planet
+      program_state.camera_inverse = this.attached().map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
     }
 
   }
