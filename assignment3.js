@@ -339,8 +339,8 @@ export class Assignment3 extends Scene {
   }
   handleIncreasePower() {
     this.power = this.power + 1;
-    if (this.power > 20) {
-      this.power = 20;
+    if (this.power > 40) {
+      this.power = 40;
     }
   }
 
