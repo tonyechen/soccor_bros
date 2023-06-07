@@ -49,7 +49,6 @@ export class Assignment3 extends Scene {
       moon: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(
         1
       ),
-
     };
 
     // *** Materials
@@ -83,6 +82,74 @@ export class Assignment3 extends Scene {
         color: hex_color('#000000'),
         texture: new Texture('assets/soccer_ball_texture.jpg'),
       }),
+
+      player_body: new Material(new Textured_Phong(), {
+        color: hex_color('#000000'),
+        ambient: 1,
+        diffusivity: 0,
+        specularity: 0,
+        texture: new Texture('assets/1.png'),
+      }),
+
+      player_legs: new Material(new defs.Phong_Shader(), {
+        ambient: 1,
+        diffusivity: 1,
+        color: hex_color('#000000'),
+      }),
+
+      player_foot: new Material(new defs.Phong_Shader(), {
+        ambient: 1,
+        diffusivity: 0,
+        color: hex_color('#062E5E'),
+      }),
+
+      player_arm: new Material(new defs.Phong_Shader(), {
+        ambient: 1,
+        diffusivity: 1,
+        specularity: 0.8,
+        color: hex_color('#062E5E'),
+      }),
+
+      player_head: new Material(new defs.Phong_Shader(), {
+        ambient: 0.5,
+        diffusivity: 0.5,
+        specularity: 0,
+        color: hex_color('#8D5524'),
+      }),
+
+      goalie_body: new Material(new Textured_Phong(), {
+        color: hex_color('#000000'),
+        ambient: 1,
+        diffusivity: 0,
+        specularity: 0,
+        texture: new Texture('assets/2.png'),
+      }),
+
+      goalie_legs: new Material(new defs.Phong_Shader(), {
+        ambient: 1,
+        diffusivity: 1,
+        color: hex_color('#ffffff'),
+      }),
+
+      goalie_foot: new Material(new defs.Phong_Shader(), {
+        ambient: 1,
+        diffusivity: 0,
+        color: hex_color('#FF0000'),
+      }),
+
+      goalie_arm: new Material(new defs.Phong_Shader(), {
+        ambient: 1,
+        diffusivity: 1,
+        specularity: 0.8,
+        color: hex_color('#ffffff'),
+      }),
+
+      goalie_head: new Material(new defs.Phong_Shader(), {
+        ambient: 0.5,
+        diffusivity: 0.5,
+        specularity: 0,
+        color: hex_color('#E0AC69'),
+      }),
     };
 
     this.initial_camera_location = Mat4.look_at(
@@ -91,72 +158,68 @@ export class Assignment3 extends Scene {
       vec3(0, 1, 0)
     );
     this.kick = false;
-    this.ball_in_air=false;
-    this.time_of_kick=0;
+    this.ball_in_air = false;
+    this.time_of_kick = 0;
 
     //The "power" of the kick is equivilant to the intitial velocity of the ball before it's projectile motion
-    this.power=20;
+    this.power = 20;
     //the lr (left-right) allows us to shift where the ball ends up on our kick along the horizontal
-    this.lr_angle=0;
+    this.lr_angle = 0;
 
     //the ud (up-down) allows us to shit where the ball ends up on our kick up and down
-    this.ud_angle=0;
+    this.ud_angle = 0;
     this.miss = false;
     //The amount of gravity on our planet!
-    this.gravity=9.8;
-    this.point_transform = Mat4.identity().times(Mat4.translation(40, 0.8, 0.1))
-        .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
-        .times(Mat4.scale(0.5, 0.5, 0.5));
-    this._transform = Mat4.identity().times(Mat4.translation(38, 0.5, 0))
-        .times(Mat4.scale(1, 0.1, 0.1))
-        .times(Mat4.translation(1, 1, 0));
+    this.gravity = 9.8;
+    this.point_transform = Mat4.identity()
+      .times(Mat4.translation(40, 0.8, 0.1))
+      .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+      .times(Mat4.scale(0.5, 0.5, 0.5));
+    this._transform = Mat4.identity()
+      .times(Mat4.translation(38, 0.5, 0))
+      .times(Mat4.scale(1, 0.1, 0.1))
+      .times(Mat4.translation(1, 1, 0));
     this.goal = false;
     this.score = 0;
-      this.goalie_position = 0;
-      this.goalie_speed = 10;
-      this.goalie_direction = 1;
-      this.isGoalieRandom = false;
-      this.goalie_random_timer = 0;
-      this.goalieDirChangeFrequency = 0.5; // change / s
+    this.goalie_position = 0;
+    this.goalie_speed = 10;
+    this.goalie_direction = 1;
+    this.isGoalieRandom = false;
+    this.goalie_random_timer = 0;
+    this.goalieDirChangeFrequency = 0.5; // change / s
   }
 
-  billboard(context, program_state) {
-
-  }
-  handleAngleUp()
-  {
+  billboard(context, program_state) {}
+  handleAngleUp() {
     //this.ud_prev = this.ud_angle;
     //Only update when the ball hasn't been kicked or when it's not in the air
-    if (!this.ball_in_air && !this.kick)
-    {
+    if (!this.ball_in_air && !this.kick) {
       //Increment the angle by 5 degrees
-      this.ud_angle=this.ud_angle+0.087;
+      this.ud_angle = this.ud_angle + 0.087;
 
       //If it's now over our limit (40 degrees), set it to it back down to 40 degrees
-      if (this.ud_angle>0.69)
-      {
-        this.ud_angle=0.69
+      if (this.ud_angle > 0.69) {
+        this.ud_angle = 0.69;
       }
-      console.log(this.ud_angle)
+      console.log(this.ud_angle);
 
-      this._transform =
-          Mat4.identity().times(Mat4.translation(38, 0.5, 0))
-          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
-              .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
-          .times(Mat4.scale(1, 0.1, 0.1))
-          .times(Mat4.translation(1, 1, 0));
+      this._transform = Mat4.identity()
+        .times(Mat4.translation(38, 0.5, 0))
+        .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+        .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+        .times(Mat4.scale(1, 0.1, 0.1))
+        .times(Mat4.translation(1, 1, 0));
 
-      this.point_transform =
-          Mat4.identity().times(Mat4.translation(37.7, 0.8, 0.1))
-          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
-              .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
-          .times(Mat4.translation(2.3, 0, 0))
-          .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
-          .times(Mat4.scale(0.5, 0.5, 0.5));
+      this.point_transform = Mat4.identity()
+        .times(Mat4.translation(37.7, 0.8, 0.1))
+        .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+        .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+        .times(Mat4.translation(2.3, 0, 0))
+        .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+        .times(Mat4.scale(0.5, 0.5, 0.5));
     }
   }
-  handleAngleDown()
-  {
+  handleAngleDown() {
     //Only update when the ball hasn't been kicked or when it's not in the air
     if (!this.ball_in_air && !this.kick) {
       //Decrement the angle by 5 degrees
@@ -166,111 +229,111 @@ export class Assignment3 extends Scene {
       if (this.ud_angle < 0.02) {
         this.ud_angle = 0;
       }
-      console.log(this.ud_angle)
-      this._transform =Mat4.identity().times(Mat4.translation(38, 0.5, 0))
-          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
-          .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
-          .times(Mat4.scale(1, 0.1, 0.1))
-          .times(Mat4.translation(1, 1, 0));
-      this.point_transform = Mat4.identity().times(Mat4.translation(37.7, 0.8, 0.1))
-          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
-          .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
-          .times(Mat4.translation(2.3, 0, 0))
-          .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
-          .times(Mat4.scale(0.5, 0.5, 0.5));
+      console.log(this.ud_angle);
+      this._transform = Mat4.identity()
+        .times(Mat4.translation(38, 0.5, 0))
+        .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+        .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+        .times(Mat4.scale(1, 0.1, 0.1))
+        .times(Mat4.translation(1, 1, 0));
+      this.point_transform = Mat4.identity()
+        .times(Mat4.translation(37.7, 0.8, 0.1))
+        .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+        .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+        .times(Mat4.translation(2.3, 0, 0))
+        .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+        .times(Mat4.scale(0.5, 0.5, 0.5));
     }
   }
-  handleAngleLeft()
-  {
+  handleAngleLeft() {
     //Only update when the ball hasn't been kicked or when it's not in the air
     if (!this.ball_in_air && !this.kick) {
       //Decrement the angle by 5 degrees
       this.lr_angle = this.lr_angle + 0.087;
 
       //If it's below zero degrees, then set it back to our limit of zero
-      if (this.lr_angle > Math.PI/4) {
-        this.lr_angle = Math.PI/4;
+      if (this.lr_angle > Math.PI / 4) {
+        this.lr_angle = Math.PI / 4;
       }
-      console.log(this.lr_angle)
-      this._transform =Mat4.identity().times(Mat4.translation(38, 0.5, 0))
-          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
-          .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
-          .times(Mat4.scale(1, 0.1, 0.1))
-          .times(Mat4.translation(1, 1, 0));
-      this.point_transform = Mat4.identity().times(Mat4.translation(37.7, 0.8, 0.1))
-          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
-          .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
-          .times(Mat4.translation(2.3, 0, 0))
-          .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
-          .times(Mat4.scale(0.5, 0.5, 0.5));
+      console.log(this.lr_angle);
+      this._transform = Mat4.identity()
+        .times(Mat4.translation(38, 0.5, 0))
+        .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+        .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+        .times(Mat4.scale(1, 0.1, 0.1))
+        .times(Mat4.translation(1, 1, 0));
+      this.point_transform = Mat4.identity()
+        .times(Mat4.translation(37.7, 0.8, 0.1))
+        .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+        .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+        .times(Mat4.translation(2.3, 0, 0))
+        .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+        .times(Mat4.scale(0.5, 0.5, 0.5));
     }
   }
-  handleAngleRight()
-  {
+  handleAngleRight() {
     if (!this.ball_in_air && !this.kick) {
       //Decrement the angle by 5 degrees
       this.lr_angle = this.lr_angle - 0.087;
 
       //If it's below zero degrees, then set it back to our limit of zero
-      if (this.lr_angle < (-1*Math.PI/4)) {
-        this.lr_angle = -1*Math.PI/4;
+      if (this.lr_angle < (-1 * Math.PI) / 4) {
+        this.lr_angle = (-1 * Math.PI) / 4;
       }
-      console.log(this.lr_angle)
-      this._transform =Mat4.identity().times(Mat4.translation(38, 0.5, 0))
-          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
-          .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
-          .times(Mat4.scale(1, 0.1, 0.1))
-          .times(Mat4.translation(1, 1, 0));
-      this.point_transform = Mat4.identity().times(Mat4.translation(37.7, 0.8, 0.1))
-          .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
-          .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
-          .times(Mat4.translation(2.3, 0, 0))
-          .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
-          .times(Mat4.scale(0.5, 0.5, 0.5));
+      console.log(this.lr_angle);
+      this._transform = Mat4.identity()
+        .times(Mat4.translation(38, 0.5, 0))
+        .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+        .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+        .times(Mat4.scale(1, 0.1, 0.1))
+        .times(Mat4.translation(1, 1, 0));
+      this.point_transform = Mat4.identity()
+        .times(Mat4.translation(37.7, 0.8, 0.1))
+        .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
+        .times(Mat4.rotation(this.lr_angle, 0, 1, 0))
+        .times(Mat4.translation(2.3, 0, 0))
+        .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+        .times(Mat4.scale(0.5, 0.5, 0.5));
     }
   }
 
   //This is to be used when a collision is detected and we need to line things up for the next shot...we will have to do this when resetting the game state
-  resetGoalState()
-  {
+  resetGoalState() {
     this.kick = false;
-    this.ball_in_air=false;
-    this.time_of_kick=0;
+    this.ball_in_air = false;
+    this.time_of_kick = 0;
 
     //The "power" of the kick is equivilant to the intitial velocity of the ball before it's projectile motion
-    this.power=20;
+    this.power = 20;
     //the lr (left-right) allows us to shift where the ball ends up on our kick along the horizontal
-    this.lr_angle=0;
+    this.lr_angle = 0;
 
     //the ud (up-down) allows us to shit where the ball ends up on our kick up and down
-    this.ud_angle=0;
+    this.ud_angle = 0;
     //The amount of gravity on our planet!
-    this.gravity=9.8;
-    this.point_transform = Mat4.identity().times(Mat4.translation(40, 0.8, 0.1))
-        .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
-        .times(Mat4.scale(0.5, 0.5, 0.5));
-    this._transform = Mat4.identity().times(Mat4.translation(38, 0.5, 0))
-        .times(Mat4.scale(1, 0.1, 0.1))
-        .times(Mat4.translation(1, 1, 0));
+    this.gravity = 9.8;
+    this.point_transform = Mat4.identity()
+      .times(Mat4.translation(40, 0.8, 0.1))
+      .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+      .times(Mat4.scale(0.5, 0.5, 0.5));
+    this._transform = Mat4.identity()
+      .times(Mat4.translation(38, 0.5, 0))
+      .times(Mat4.scale(1, 0.1, 0.1))
+      .times(Mat4.translation(1, 1, 0));
   }
-  handleIncreasePower()
-  {
-    this.power=this.power+1;
-    if (this.power>20)
-    {
-      this.power=20;
+  handleIncreasePower() {
+    this.power = this.power + 1;
+    if (this.power > 20) {
+      this.power = 20;
     }
   }
 
-  handleDecreasePower()
-  {
-    this.power=this.power-1;
-    if (this.power<5)
-    {
-      this.power=5;
+  handleDecreasePower() {
+    this.power = this.power - 1;
+    if (this.power < 5) {
+      this.power = 5;
     }
   }
-
 
   make_control_panel() {
     // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
@@ -294,53 +357,33 @@ export class Assignment3 extends Scene {
       () => (this.kick = !this.ball_in_air)
     );
     //99999999
-    this.key_triggered_button(
-        'aim_up',
-        ['9'],
-        () => this.handleAngleUp()
+    this.key_triggered_button('aim_up', ['9'], () => this.handleAngleUp());
+    this.key_triggered_button('aim_down', ['8'], () => this.handleAngleDown());
+    this.key_triggered_button('aim_left', ['7'], () => this.handleAngleLeft());
+    this.key_triggered_button('aim_right', ['6'], () =>
+      this.handleAngleRight()
+    );
+    this.key_triggered_button('collision detected', ['b'], () =>
+      this.resetGoalState()
     );
     this.key_triggered_button(
-        'aim_down',
-        ['8'],
-        () =>this.handleAngleDown()
+      'increase power',
+      ['p'],
+      () => (this.power = this.power + 1)
     );
     this.key_triggered_button(
-        'aim_left',
-        ['7'],
-        () =>this.handleAngleLeft()
+      'decrease power',
+      ['q'],
+      () => (this.power = this.power - 1)
     );
-    this.key_triggered_button(
-        'aim_right',
-        ['6'],
-        () =>this.handleAngleRight()
-    );
-    this.key_triggered_button(
-        'collision detected',
-        ['b'],
-        () =>this.resetGoalState()
-    );
-    this.key_triggered_button(
-        'increase power',
-        ['p'],
-        () => (this.power= this.power+1)
-    );
-    this.key_triggered_button(
-        'decrease power',
-        ['q'],
-        () => (this.power= this.power-1)
-    );
-      this.key_triggered_button(
-          `toggle difficulty`,
-          ['g'],
-          () => {
-              this.isGoalieRandom = !this.isGoalieRandom;
-              if (this.isGoalieRandom) {
-                  this.goalie_speed += 5;
-              } else {
-                  this.goalie_speed -= 5;
-              }
-          }
-      );
+    this.key_triggered_button(`toggle difficulty`, ['g'], () => {
+      this.isGoalieRandom = !this.isGoalieRandom;
+      if (this.isGoalieRandom) {
+        this.goalie_speed += 5;
+      } else {
+        this.goalie_speed -= 5;
+      }
+    });
   }
 
   draw_stadium(context, program_state) {
@@ -635,134 +678,146 @@ export class Assignment3 extends Scene {
       this.goal = false;
     }
   }
-  draw_ball_2(context, program_state)
-  {
+  draw_ball_2(context, program_state) {
     if (!context.scratchpad.controls) {
       this.children.push(
-          (context.scratchpad.controls = new defs.Movement_Controls())
+        (context.scratchpad.controls = new defs.Movement_Controls())
       );
       // Define the global camera and projection matrices, which are stored in program_state.
       program_state.set_camera(this.initial_camera_location);
     }
     program_state.projection_transform = Mat4.perspective(
-        Math.PI / 4,
-        context.width / context.height,
-        0.1,
-        1000
+      Math.PI / 4,
+      context.width / context.height,
+      0.1,
+      1000
     );
     let t = program_state.animation_time / 1000,
-        dt = program_state.animation_delta_time / 1000;
+      dt = program_state.animation_delta_time / 1000;
 
     let model_transform = Mat4.identity();
 
-    let ball_transform = model_transform
-        .times(Mat4.translation(38, 0.5, 0));
+    let ball_transform = model_transform.times(Mat4.translation(38, 0.5, 0));
 
-
-    if (this.kick)
-    {
-      this.ball_in_air=true;
-      this.time_of_kick=t;
-      console.log("Kicked!");
+    if (this.kick) {
+      this.ball_in_air = true;
+      this.time_of_kick = t;
+      console.log('Kicked!');
       this.miss = false;
     }
 
-    if (this.ball_in_air)
-    {
-      ball_transform=ball_transform.times(Mat4.rotation(this.lr_angle,0,1,0));
+    if (this.ball_in_air) {
+      ball_transform = ball_transform.times(
+        Mat4.rotation(this.lr_angle, 0, 1, 0)
+      );
 
-      let curr_time= t - this.time_of_kick;
+      let curr_time = t - this.time_of_kick;
       //Ball is on the ground
-      if (this.ud_angle === 0)
-      {
-        let initial_velocity=this.power;
-        let delta_x = initial_velocity*curr_time;
-        ball_transform=ball_transform.times(Mat4.translation(delta_x,0,0));
-      }
-      else
-      {
-        let initial_velocity=this.power;
-        let initial_velocity_x=initial_velocity*Math.cos(this.ud_angle)
-        let initial_velocity_y = initial_velocity*Math.sin(this.ud_angle);
+      if (this.ud_angle === 0) {
+        let initial_velocity = this.power;
+        let delta_x = initial_velocity * curr_time;
+        ball_transform = ball_transform.times(Mat4.translation(delta_x, 0, 0));
+      } else {
+        let initial_velocity = this.power;
+        let initial_velocity_x = initial_velocity * Math.cos(this.ud_angle);
+        let initial_velocity_y = initial_velocity * Math.sin(this.ud_angle);
 
         let gravity = this.gravity;
 
-        let delta_x = initial_velocity_x*curr_time;
-        let delta_y=(-0.5*gravity*curr_time*curr_time)+(initial_velocity_y*curr_time);
+        let delta_x = initial_velocity_x * curr_time;
+        let delta_y =
+          -0.5 * gravity * curr_time * curr_time +
+          initial_velocity_y * curr_time;
 
-        ball_transform=ball_transform.times(Mat4.translation(delta_x,delta_y,0));
+        ball_transform = ball_transform.times(
+          Mat4.translation(delta_x, delta_y, 0)
+        );
       }
-      let ball_rotation = 4*Math.PI*curr_time*(2);
-      ball_transform=ball_transform.times(Mat4.rotation(ball_rotation,0,0,1));
-      if (ball_transform.valueOf()[0][3] > 50.0 && ball_transform.valueOf()[1][3] < 5.6
-          && ball_transform.valueOf()[2][3] < 10
-          && ball_transform.valueOf()[2][3] > -10) {
-          console.log(ball_transform.valueOf()[2][3]);
-          console.log(this.goalie_position);
-          //if goalie legs height, then use width of legs, if arms, use arm width, if head use only head width
-          // widths need to be checked with Tony
-            if(ball_transform.valueOf()[1][3] < 1.2 && ball_transform.valueOf()[2][3] < (this.goalie_position+1)
-                && ball_transform.valueOf()[2][3] > (this.goalie_position -1))
-            {
-                this.resetGoalState();
-                this.ball_in_air = false;
-                this.miss = true;
-                console.log("SAVED");
-            }
-            else if(ball_transform.valueOf()[1][3] > 1.2 && ball_transform.valueOf()[1][3] < 3.2
-                && ball_transform.valueOf()[2][3] < (this.goalie_position - 1.6)
-                && ball_transform.valueOf()[2][3] > (this.goalie_position + 1.6)){
-              this.resetGoalState();
-              this.ball_in_air = false;
-              this.miss = true;
-              console.log("SAVED");
-            }
-            else if(ball_transform.valueOf()[1][3] > 3.2 && ball_transform.valueOf()[1][3] < 4.2
-                && ball_transform.valueOf()[2][3] < (this.goalie_position - 0.5)
-                && ball_transform.valueOf()[2][3] > (this.goalie_position + 0.5)){
-
-            }
-            else{
-                this.goal = true;
-                this.score = this.score + 1;
-                this.resetGoalState();
-                this.ball_in_air = false;
-            }
+      let ball_rotation = 4 * Math.PI * curr_time * 2;
+      ball_transform = ball_transform.times(
+        Mat4.rotation(ball_rotation, 0, 0, 1)
+      );
+      if (
+        ball_transform.valueOf()[0][3] > 50.0 &&
+        ball_transform.valueOf()[1][3] < 5.6 &&
+        ball_transform.valueOf()[2][3] < 10 &&
+        ball_transform.valueOf()[2][3] > -10
+      ) {
+        console.log(ball_transform.valueOf()[2][3]);
+        console.log(this.goalie_position);
+        //if goalie legs height, then use width of legs, if arms, use arm width, if head use only head width
+        // widths need to be checked with Tony
+        if (
+          ball_transform.valueOf()[1][3] < 1.2 &&
+          ball_transform.valueOf()[2][3] < this.goalie_position + 1 &&
+          ball_transform.valueOf()[2][3] > this.goalie_position - 1
+        ) {
+          this.resetGoalState();
+          this.ball_in_air = false;
+          this.miss = true;
+          console.log('SAVED');
+        } else if (
+          ball_transform.valueOf()[1][3] > 1.2 &&
+          ball_transform.valueOf()[1][3] < 3.2 &&
+          ball_transform.valueOf()[2][3] < this.goalie_position - 1.6 &&
+          ball_transform.valueOf()[2][3] > this.goalie_position + 1.6
+        ) {
+          this.resetGoalState();
+          this.ball_in_air = false;
+          this.miss = true;
+          console.log('SAVED');
+        } else if (
+          ball_transform.valueOf()[1][3] > 3.2 &&
+          ball_transform.valueOf()[1][3] < 4.2 &&
+          ball_transform.valueOf()[2][3] < this.goalie_position - 0.5 &&
+          ball_transform.valueOf()[2][3] > this.goalie_position + 0.5
+        ) {
+        } else {
+          this.goal = true;
+          this.score = this.score + 1;
+          this.resetGoalState();
+          this.ball_in_air = false;
+        }
         //ball_transform = model_transform.times(Mat4.translation(55 , 2.2, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
-      }
-      else if(ball_transform.valueOf()[0][3] > 50.0 && ball_transform.valueOf()[1][3] > 5.6 ||
-          ball_transform.valueOf()[0][3] > 50.0 && ball_transform.valueOf()[2][3] > 10
-          || ball_transform.valueOf()[0][3] > 50.0 && ball_transform.valueOf()[2][3] < -10){
+      } else if (
+        (ball_transform.valueOf()[0][3] > 50.0 &&
+          ball_transform.valueOf()[1][3] > 5.6) ||
+        (ball_transform.valueOf()[0][3] > 50.0 &&
+          ball_transform.valueOf()[2][3] > 10) ||
+        (ball_transform.valueOf()[0][3] > 50.0 &&
+          ball_transform.valueOf()[2][3] < -10)
+      ) {
         this.resetGoalState();
         this.ball_in_air = false;
         this.miss = true;
       }
-    }
-    else{
+    } else {
       this.shapes.cube.draw(
-          context,
-          program_state,
-          this._transform,
-          this.materials.test.override({ color: hex_color('#F22431') }));
-      this.shapes.cone.draw(context, program_state,
-          this.point_transform,
-          this.materials.test.override({ color: hex_color('#F22431') }));
-    }
-
-
-    this.kick=false;
-
-    ball_transform=ball_transform.times(Mat4.scale(0.5,0.5,0.5));
-
-
-    this.shapes.ball.draw(
         context,
         program_state,
-        ball_transform,
-        this.materials.ball
+        this._transform,
+        this.materials.test.override({ color: hex_color('#F22431') })
+      );
+      this.shapes.cone.draw(
+        context,
+        program_state,
+        this.point_transform,
+        this.materials.test.override({ color: hex_color('#F22431') })
+      );
+    }
+
+    this.kick = false;
+
+    ball_transform = ball_transform.times(Mat4.scale(0.5, 0.5, 0.5));
+
+    this.shapes.ball.draw(
+      context,
+      program_state,
+      ball_transform,
+      this.materials.ball
     );
 
-    this.kick=false;
+    this.kick = false;
   }
 
   draw_goal(context, program_state) {
@@ -803,7 +858,7 @@ export class Assignment3 extends Scene {
     );
   }
 
-  draw_player(context, program_state, start_transform, animation) {
+  draw_player(context, program_state, start_transform, types, animation) {
     const leg_length = 1.2;
     const leg_width = 0.8;
     const leg_offset = 0.1;
@@ -839,15 +894,15 @@ export class Assignment3 extends Scene {
         .times(Mat4.rotation((1 / 4) * Math.sin(animation_speed * t), 1, 0, 0));
     }
 
-      if (animation == 'defending') {
-          start_transform = start_transform.times(
-              Mat4.translation(
-                  0,
-                  -1 / 10 + -(1 / 10) * Math.sin(animation_speed * t),
-                  0
-              )
-          );
-      }
+    if (animation == 'defending') {
+      start_transform = start_transform.times(
+        Mat4.translation(
+          0,
+          -1 / 10 + -(1 / 10) * Math.sin(animation_speed * t),
+          0
+        )
+      );
+    }
 
     // left leg
     // final position
@@ -872,32 +927,43 @@ export class Assignment3 extends Scene {
       // -------------------
     }
 
-      if (animation == 'defending') {
-          leftLeg_transform = leftLeg_transform
-              .times(Mat4.translation(0, 2 * leg_length, 0))
-              .times(
-                  Mat4.rotation(
-                      -1 / 10 + -(1 / 10) * Math.sin(animation_speed * t),
-                      0,
-                      0,
-                      1
-                  )
-              )
-              .times(Mat4.translation(0, -2 * leg_length, 0));
-          // -------------------
-      }
+    if (animation == 'defending') {
+      leftLeg_transform = leftLeg_transform
+        .times(Mat4.translation(0, 2 * leg_length, 0))
+        .times(
+          Mat4.rotation(
+            -1 / 10 + -(1 / 10) * Math.sin(animation_speed * t),
+            0,
+            0,
+            1
+          )
+        )
+        .times(Mat4.translation(0, -2 * leg_length, 0));
+      // -------------------
+    }
 
     // model scaling
     leftLeg_transform = leftLeg_transform
       .times(Mat4.scale(leg_width, leg_length, leg_width))
       .times(Mat4.translation(0, 1, 0));
 
-    this.shapes.cube.draw(
-      context,
-      program_state,
-      leftLeg_transform,
-      this.materials.test
-    );
+    if (types == 'player') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        leftLeg_transform,
+        this.materials.player_legs
+      );
+    }
+
+    if (types == 'goalie') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        leftLeg_transform,
+        this.materials.goalie_legs
+      );
+    }
 
     leftLeg_transform = leftLeg_transform
       .times(Mat4.translation(0, -1, 0))
@@ -905,20 +971,29 @@ export class Assignment3 extends Scene {
 
     // left foot
     let leftFoot_transform = leftLeg_transform
-      .times(Mat4.translation(0, 0, 0.6 * leg_width))
+      .times(Mat4.translation(0, 0, 0.2 * leg_width))
 
-      .times(Mat4.scale(leg_width, 0.2, 1.2 * leg_width))
+      .times(Mat4.scale(1.1 * leg_width, 0.2, 1.3 * leg_width))
       .times(Mat4.translation(0, 1, 0));
 
-    this.shapes.cube.draw(
-      context,
-      program_state,
-      leftFoot_transform,
-      this.materials.test
-    );
+    if (types == 'player') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        leftFoot_transform,
+        this.materials.player_foot
+      );
+    }
+    if (types == 'goalie') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        leftFoot_transform,
+        this.materials.goalie_foot
+      );
+    }
 
     // right leg
-    // left leg
     // final position
     let rightLeg_transform = start_transform.times(
       Mat4.translation(1 + leg_offset, 0, 0)
@@ -943,33 +1018,43 @@ export class Assignment3 extends Scene {
       // -------------------
     }
 
-      if (animation == 'defending') {
-          rightLeg_transform = rightLeg_transform
-              // rotation animation
-              .times(Mat4.translation(0, 2 * leg_length, 0))
-              .times(
-                  Mat4.rotation(
-                      1 / 10 + (1 / 10) * Math.sin(animation_speed * t),
-                      0,
-                      0,
-                      1
-                  )
-              )
-              .times(Mat4.translation(0, -2 * leg_length, 0));
-          // -------------------
-      }
+    if (animation == 'defending') {
+      rightLeg_transform = rightLeg_transform
+        // rotation animation
+        .times(Mat4.translation(0, 2 * leg_length, 0))
+        .times(
+          Mat4.rotation(
+            1 / 10 + (1 / 10) * Math.sin(animation_speed * t),
+            0,
+            0,
+            1
+          )
+        )
+        .times(Mat4.translation(0, -2 * leg_length, 0));
+      // -------------------
+    }
 
     // model scaling
     rightLeg_transform = rightLeg_transform
       .times(Mat4.scale(leg_width, leg_length, leg_width))
       .times(Mat4.translation(0, 1, 0));
 
-    this.shapes.cube.draw(
-      context,
-      program_state,
-      rightLeg_transform,
-      this.materials.test
-    );
+    if (types == 'player') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        rightLeg_transform,
+        this.materials.player_legs
+      );
+    }
+    if (types == 'goalie') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        rightLeg_transform,
+        this.materials.goalie_legs
+      );
+    }
 
     rightLeg_transform = rightLeg_transform
       .times(Mat4.translation(0, -1, 0))
@@ -977,49 +1062,91 @@ export class Assignment3 extends Scene {
 
     // right foot
     let rightFoot_transform = rightLeg_transform
-      .times(Mat4.translation(0, 0, 0.6 * leg_width))
+      .times(Mat4.translation(0, 0, 0.2 * leg_width))
 
-      .times(Mat4.scale(leg_width, 0.2, 1.2 * leg_width))
+      .times(Mat4.scale(1.1 * leg_width, 0.2, 1.4 * leg_width))
       .times(Mat4.translation(0, 1, 0));
-    this.shapes.cube.draw(
-      context,
-      program_state,
-      rightFoot_transform,
-      this.materials.test
-    );
+    if (types == 'player') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        rightFoot_transform,
+        this.materials.player_foot
+      );
+    }
+    if (types == 'goalie') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        rightFoot_transform,
+        this.materials.goalie_foot
+      );
+    }
 
     // left butt cheek
     let leftButtCheek_transform = start_transform
       .times(Mat4.translation(-1, leg_length * 2, -body_thickness / 2))
       .times(Mat4.scale(body_thickness, body_thickness, body_thickness));
-    this.shapes.sphere.draw(
-      context,
-      program_state,
-      leftButtCheek_transform,
-      this.materials.test
-    );
+
+    if (types == 'player') {
+      this.shapes.sphere.draw(
+        context,
+        program_state,
+        leftButtCheek_transform,
+        this.materials.player_legs
+      );
+    }
+    if (types == 'goalie') {
+      this.shapes.sphere.draw(
+        context,
+        program_state,
+        leftButtCheek_transform,
+        this.materials.goalie_legs
+      );
+    }
 
     // right butt cheek
     let rightButtCheek_transform = start_transform
       .times(Mat4.translation(1, leg_length * 2, -body_thickness / 2))
       .times(Mat4.scale(body_thickness, body_thickness, body_thickness));
-    this.shapes.sphere.draw(
-      context,
-      program_state,
-      rightButtCheek_transform,
-      this.materials.test
-    );
+    if (types == 'player') {
+      this.shapes.sphere.draw(
+        context,
+        program_state,
+        rightButtCheek_transform,
+        this.materials.player_legs
+      );
+    }
+    if (types == 'goalie') {
+      this.shapes.sphere.draw(
+        context,
+        program_state,
+        rightButtCheek_transform,
+        this.materials.goalie_legs
+      );
+    }
 
     // body
     let body_transform = start_transform
       .times(Mat4.translation(0, body_height + leg_length * 2, 0))
       .times(Mat4.scale(body_width, body_height, body_thickness));
-    this.shapes.cube.draw(
-      context,
-      program_state,
-      body_transform,
-      this.materials.test
-    );
+
+    if (types == 'player') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        body_transform,
+        this.materials.player_body
+      );
+    }
+    if (types == 'goalie') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        body_transform,
+        this.materials.goalie_body
+      );
+    }
 
     // left arm
     // final position
@@ -1047,32 +1174,41 @@ export class Assignment3 extends Scene {
       // -----------------
     }
 
-      if (animation == 'defending') {
-          leftArm_transform = leftArm_transform
-              .times(Mat4.translation(0, arm_length * 0.8, 0))
-              .times(
-                  Mat4.rotation(
-                      -1 / 5 + (-1 / 5) * Math.sin(animation_speed * t),
-                      0,
-                      0,
-                      1
-                  )
-              )
-              .times(Mat4.translation(0, -arm_length * 0.8, 0));
-          // -----------------
-      }
+    if (animation == 'defending') {
+      leftArm_transform = leftArm_transform
+        .times(Mat4.translation(0, arm_length * 0.8, 0))
+        .times(
+          Mat4.rotation(
+            -1 / 5 + (-1 / 5) * Math.sin(animation_speed * t),
+            0,
+            0,
+            1
+          )
+        )
+        .times(Mat4.translation(0, -arm_length * 0.8, 0));
+      // -----------------
+    }
 
     // model scaling
     leftArm_transform = leftArm_transform.times(
       Mat4.scale(arm_width, arm_length, arm_width)
     );
-
-    this.shapes.cube.draw(
-      context,
-      program_state,
-      leftArm_transform,
-      this.materials.test
-    );
+    if (types == 'player') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        leftArm_transform,
+        this.materials.player_arm
+      );
+    }
+    if (types == 'goalie') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        leftArm_transform,
+        this.materials.goalie_arm
+      );
+    }
 
     // right arm
     let rightArm_transform = start_transform.times(
@@ -1113,32 +1249,41 @@ export class Assignment3 extends Scene {
       // -----------------
     }
 
-      if (animation == 'defending') {
-          rightArm_transform = rightArm_transform
-              .times(Mat4.translation(0, arm_length * 0.8, 0))
-              .times(
-                  Mat4.rotation(
-                      1 / 5 + (1 / 5) * Math.sin(animation_speed * t),
-                      0,
-                      0,
-                      1
-                  )
-              )
-              .times(Mat4.translation(0, -arm_length * 0.8, 0));
-          // -----------------
-      }
+    if (animation == 'defending') {
+      rightArm_transform = rightArm_transform
+        .times(Mat4.translation(0, arm_length * 0.8, 0))
+        .times(
+          Mat4.rotation(
+            1 / 5 + (1 / 5) * Math.sin(animation_speed * t),
+            0,
+            0,
+            1
+          )
+        )
+        .times(Mat4.translation(0, -arm_length * 0.8, 0));
+      // -----------------
+    }
 
     // model scaling
     rightArm_transform = rightArm_transform.times(
       Mat4.scale(arm_width, arm_length, arm_width)
     );
-
-    this.shapes.cube.draw(
-      context,
-      program_state,
-      rightArm_transform,
-      this.materials.test
-    );
+    if (types == 'player') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        rightArm_transform,
+        this.materials.player_arm
+      );
+    }
+    if (types == 'goalie') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        rightArm_transform,
+        this.materials.goalie_arm
+      );
+    }
 
     // head
     let head_transform = start_transform
@@ -1146,42 +1291,58 @@ export class Assignment3 extends Scene {
         Mat4.translation(0, 1 + leg_length + body_height * 2 + head_height, 0)
       )
       .times(Mat4.scale(head_width, head_height, head_width));
-    this.shapes.cube.draw(
-      context,
-      program_state,
-      head_transform,
-      this.materials.test
-    );
+    if (types == 'player') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        head_transform,
+        this.materials.player_head
+      );
+    }
+    if (types == 'goalie') {
+      this.shapes.cube.draw(
+        context,
+        program_state,
+        head_transform,
+        this.materials.goalie_head
+      );
+    }
   }
 
   display(context, program_state) {
-      const t = program_state.animation_time / 1000,
-          dt = program_state.animation_delta_time / 1000;
+    const t = program_state.animation_time / 1000,
+      dt = program_state.animation_delta_time / 1000;
 
-      this.draw_stadium(context, program_state);
+    this.draw_stadium(context, program_state);
     this.billboard(context, program_state);
     this.draw_goal(context, program_state);
     this.draw_ball_2(context, program_state);
     let start_transform = Mat4.identity();
-      if (this.isGoalieRandom) {
-          if (this.goalie_random_timer > this.goalieDirChangeFrequency) {
-              this.goalie_direction = Math.random() < 0.5 ? -1 : 1;
-              this.goalie_random_timer = 0;
-          }
-          this.goalie_random_timer += dt;
+    if (this.isGoalieRandom) {
+      if (this.goalie_random_timer > this.goalieDirChangeFrequency) {
+        this.goalie_direction = Math.random() < 0.5 ? -1 : 1;
+        this.goalie_random_timer = 0;
       }
-      if (this.goalie_position > 8) {
-          this.goalie_direction = -1;
-      } else if (this.goalie_position < -8) {
-          this.goalie_direction = 1;
-      }
-      this.goalie_position += this.goalie_direction * this.goalie_speed * dt;
+      this.goalie_random_timer += dt;
+    }
+    if (this.goalie_position > 8) {
+      this.goalie_direction = -1;
+    } else if (this.goalie_position < -8) {
+      this.goalie_direction = 1;
+    }
+    this.goalie_position += this.goalie_direction * this.goalie_speed * dt;
 
     start_transform = start_transform
       .times(Mat4.translation(49, 0, this.goalie_position))
       .times(Mat4.rotation(-1.5, 0, 1, 0))
       .times(Mat4.scale(1 / 2, 1 / 2, 1 / 2));
-    this.draw_player(context, program_state, start_transform, 'defending');
+    this.draw_player(
+      context,
+      program_state,
+      start_transform,
+      'goalie',
+      'defending'
+    );
 
     // player
     start_transform = Mat4.identity();
@@ -1189,13 +1350,20 @@ export class Assignment3 extends Scene {
       .times(Mat4.translation(35, 0, -2))
       .times(Mat4.rotation(1.2, 0, 1, 0))
       .times(Mat4.scale(1 / 2, 1 / 2, 1 / 2));
-    if(this.kick){
-        this.draw_player(context, program_state, start_transform, 'kicking');
-    }
-    else{
-        this.draw_player(context, program_state, start_transform, '');
-    }
 
+    console.log('this.kick: ', this.kick);
+    console.log('this.ball_in_air: ', this.ball_in_air);
+    if (this.kick) {
+      this.draw_player(
+        context,
+        program_state,
+        start_transform,
+        'player',
+        'kicking'
+      );
+    } else {
+      this.draw_player(context, program_state, start_transform, 'player', '');
+    }
   }
 }
 
