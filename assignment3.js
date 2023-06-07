@@ -1,4 +1,5 @@
 import { defs, tiny } from './examples/common.js';
+import { Text_Line } from './examples/text-demo.js';
 
 const {
   Vector,
@@ -34,8 +35,8 @@ export class Assignment3 extends Scene {
       ),
       cone: new defs.Cone_Tip(3, 3, [0, 1]),
       guide: new defs.Axis_Arrows(),
-      triangle: new defs.Triangle()
-
+      triangle: new defs.Triangle(),
+      text: new Text_Line(35),
     };
 
     // *** Materials
@@ -152,6 +153,12 @@ export class Assignment3 extends Scene {
         diffusivity: 0.5,
         specularity: 0,
         color: hex_color('#E0AC69'),
+      }),
+      text_image: new Material(new defs.Textured_Phong(1), {
+        ambient: 1,
+        diffusivity: 0,
+        specularity: 0,
+        texture: new Texture('assets/text.png'),
       }),
     };
 
@@ -1329,12 +1336,44 @@ export class Assignment3 extends Scene {
     }
   }
 
+  draw_text(context, program_state, text, offset_y) {
+    // offset_y is the line number
+  if(this.attached !== undefined){
+    // fix text to the camera
+    let text_transform = Mat4.identity()
+        // .times(program_state.projection_transform)
+        .times(Mat4.translation(5, 0.5 - offset_y / 3, -3.2 - offset_y / 18))
+        .times(Mat4.inverse(program_state.camera_inverse))
+        .times(Mat4.scale(1 / 10, 1 / 10, 1 / 10));
+    this.shapes.text.set_string(text, context.context);
+    this.shapes.text.draw(
+        context,
+        program_state,
+        text_transform,
+        this.materials.text_image
+    );
+    }
+  else{
+    let text_transform = Mat4.identity()
+        // .times(program_state.projection_transform)
+        .times(Mat4.translation(5, 0.5 - offset_y / 3, -8 - offset_y / 18))
+        .times(Mat4.inverse(program_state.camera_inverse))
+        .times(Mat4.scale(1 / 5, 1 / 5, 1 / 5));
+    this.shapes.text.set_string(text, context.context);
+    this.shapes.text.draw(
+        context,
+        program_state,
+        text_transform,
+        this.materials.text_image
+    );
+  }
+  }
+
   display(context, program_state) {
     const t = program_state.animation_time / 1000,
       dt = program_state.animation_delta_time / 1000;
 
     this.draw_stadium(context, program_state);
-    this.billboard(context, program_state);
     this.draw_goal(context, program_state);
     this.draw_ball_2(context, program_state);
     let start_transform = Mat4.identity();
@@ -1411,7 +1450,27 @@ export class Assignment3 extends Scene {
     if (this.attached !== undefined) {
       // Blend desired camera position with existing camera matrix (from previous frame) to smoothly pull camera towards planet
       program_state.camera_inverse = this.attached().map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
+      //program_state.set_camera(this.shootout);
+      this.draw_text(context, program_state, `score: ${this.score}`, 0);
+      this.draw_text(context, program_state, `power: ${this.power}`, 1);
+      this.draw_text(
+          context,
+          program_state,
+          `angle Y: ${(this.ud_angle / 3.14) * 180}`,
+          2
+      );
+      this.draw_text(
+          context,
+          program_state,
+          `angle X: ${(this.lr_angle / 3.14) * 180}`,
+          3
+      );
+
     }
+    else{
+      this.draw_text(context, program_state, `Press b to start`, 20);
+    }
+
 
   }
 }
