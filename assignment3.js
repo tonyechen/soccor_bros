@@ -187,6 +187,7 @@ export class Assignment3 extends Scene {
       .times(Mat4.translation(38, 0.5, 0))
       .times(Mat4.scale(1, 0.1, 0.1))
       .times(Mat4.translation(1, 1, 0));
+
     this.goal = false;
     this.score = 0;
     this.goalie_position = 0;
@@ -199,13 +200,15 @@ export class Assignment3 extends Scene {
     this.player_kick_finish = true;
     this.player_kicked = true;
     this.player_kick_t = 0;
+
+    this.game_started=false;
   }
 
   billboard(context, program_state) {}
   handleAngleUp() {
     //this.ud_prev = this.ud_angle;
     //Only update when the ball hasn't been kicked or when it's not in the air
-    if (!this.ball_in_air && !this.kick) {
+    if (!this.ball_in_air && !this.kick && this.game_started) {
       //Increment the angle by 5 degrees
       this.ud_angle = this.ud_angle + 0.087;
 
@@ -233,7 +236,7 @@ export class Assignment3 extends Scene {
   }
   handleAngleDown() {
     //Only update when the ball hasn't been kicked or when it's not in the air
-    if (!this.ball_in_air && !this.kick) {
+    if (!this.ball_in_air && !this.kick && this.game_started) {
       //Decrement the angle by 5 degrees
       this.ud_angle = this.ud_angle - 0.087;
 
@@ -259,7 +262,7 @@ export class Assignment3 extends Scene {
   }
   handleAngleLeft() {
     //Only update when the ball hasn't been kicked or when it's not in the air
-    if (!this.ball_in_air && !this.kick) {
+    if (!this.ball_in_air && !this.kick && this.game_started) {
       //Decrement the angle by 5 degrees
       this.lr_angle = this.lr_angle + 0.087;
 
@@ -284,7 +287,7 @@ export class Assignment3 extends Scene {
     }
   }
   handleAngleRight() {
-    if (!this.ball_in_air && !this.kick) {
+    if (!this.ball_in_air && !this.kick && this.game_started) {
       //Decrement the angle by 5 degrees
       this.lr_angle = this.lr_angle - 0.087;
 
@@ -331,34 +334,35 @@ export class Assignment3 extends Scene {
       .times(Mat4.translation(1, 1, 0));
   }
   handleIncreasePower() {
-    this.power = this.power + 1;
-    if (this.power > 20) {
-      this.power = 20;
+    if (this.game_started)
+    {
+      this.power = this.power + 1;
+      if (this.power > 20) {
+        this.power = 20;
+      }
     }
   }
 
   handleDecreasePower() {
-    this.power = this.power - 1;
-    if (this.power < 5) {
-      this.power = 5;
+
+    if (this.game_started) {
+      this.power = this.power - 1;
+      if (this.power < 5) {
+        this.power = 5;
+      }
     }
+  }
+  handleStartGame()
+  {
+    this.attached = () => this.shootout;
+    this.game_started=true;
+
   }
 
   make_control_panel() {
-    // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-    // this.key_triggered_button("View solar system", ["Control", "0"], () => this.attached = () => this.initial_camera_location);
-    // this.new_line();
-    // this.key_triggered_button("Attach to planet 1", ["Control", "1"], () => this.attached = () => this.planet_1);
-    // this.key_triggered_button("Attach to planet 2", ["Control", "2"], () => this.attached = () => this.planet_2);
-    // this.new_line();
-    // this.key_triggered_button("Attach to planet 3", ["Control", "3"], () => this.attached = () => this.planet_3);
-    // this.key_triggered_button("Attach to planet 4", ["Control", "4"], () => this.attached = () => this.planet_4);
-    // this.new_line();
-    // this.key_triggered_button("Attach to moon", ["Control", "m"], () => this.attached = () => this.moon);
-    // this.new_line();
     this.key_triggered_button('kick', ['t'], () => {
-      this.kick = true;
-      this.kick_t = new Date().getTime();
+        this.kick = true;
+        this.kick_t = new Date().getTime();
     });
     this.key_triggered_button(
         'kick',
@@ -372,9 +376,7 @@ export class Assignment3 extends Scene {
     this.key_triggered_button('aim_right', ['6'], () =>
       this.handleAngleRight()
     );
-    this.key_triggered_button('collision detected', ['b'], () =>
-      this.resetGoalState()
-    );
+
     this.key_triggered_button(
         'increase power',
         ['p'],
@@ -400,7 +402,7 @@ export class Assignment3 extends Scene {
     this.key_triggered_button(
         'start',
         ['b'],
-        () => this.attached = () => this.shootout
+        () => this.handleStartGame()
     );
   }
 
@@ -635,7 +637,7 @@ export class Assignment3 extends Scene {
 
     let ball_transform = model_transform.times(Mat4.translation(38, 0.5, 0));
 
-    if (this.kick) {
+    if (this.kick && this.game_started) {
       this.ball_in_air = true;
       this.player_kick_t = t;
       this.player_kick_finish = false;
@@ -716,6 +718,7 @@ export class Assignment3 extends Scene {
           this.score = this.score + 1;
           this.resetGoalState();
           this.ball_in_air = false;
+          console.log('GOAL!');
         }
         //ball_transform = model_transform.times(Mat4.translation(55 , 2.2, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
       } else if (
@@ -729,6 +732,7 @@ export class Assignment3 extends Scene {
         this.resetGoalState();
         this.ball_in_air = false;
         this.miss = true;
+        console.log('MISSED');
       }
     } else {
       this.shapes.cube.draw(
