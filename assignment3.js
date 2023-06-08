@@ -678,6 +678,14 @@ export class Assignment3 extends Scene {
           -0.5 * gravity * curr_time * curr_time +
           initial_velocity_y * curr_time;
       }
+        ball_transform = ball_transform.times(
+         Mat4.translation(delta_x, delta_y, 0)
+        );
+
+        let ball_rotation = 4 * Math.PI * curr_time * 2;
+        ball_transform = ball_transform.times(
+          Mat4.rotation(ball_rotation, 0, 0, 1)
+        );
 
       if (
         ball_transform.valueOf()[0][3] > 48.0 &&
@@ -733,17 +741,7 @@ export class Assignment3 extends Scene {
         this.miss = true;
       }
 
-      // ball transforms
-      ball_transform = ball_transform.times(
-        Mat4.translation(delta_x, delta_y, 0)
-      );
-
-      let ball_rotation = 4 * Math.PI * curr_time * 2;
-      ball_transform = ball_transform.times(
-        Mat4.rotation(ball_rotation, 0, 0, 1)
-      );
-
-      // timer until the ball resets
+      // ball reset timer
       if (curr_time > 3) {
         this.resetGoalState();
       }
