@@ -710,14 +710,24 @@ export class Assignment3 extends Scene {
         Mat4.rotation(ball_rotation, 0, 0, 1)
       );
 
-      if (
+      //TOPBAR CODE IS THE BENEATH IF STATEMENT
+      if (ball_transform.valueOf()[1][3] < 6.1 && ball_transform.valueOf()[1][3] > 5.1 && ball_transform.valueOf()[0][3] > 47.5 && ball_transform.valueOf()[0][3] < 48.5 && ball_transform.valueOf()[2][3]>-10 && ball_transform.valueOf()[2][3]<10)
+      {
+        console.log('hit crossbar');
+        console.log('DOINKED');
+        this.ball_in_air = false;
+        this.miss = true;
+        this.ricochet=true;
+        this.ball_transform_at_collision = pre_z_rotation_transform;
+        this.time_of_collision=t;
+
+      }
+      else if (
         ball_transform.valueOf()[0][3] > 48.0 &&
         ball_transform.valueOf()[1][3] < 5.6 &&
         ball_transform.valueOf()[2][3] < 10 &&
         ball_transform.valueOf()[2][3] > -10
       ) {
-
-
         //if goalie legs height, then use width of legs, if arms, use arm width, if head use only head width
         // widths need to be checked with Tony
         if (
@@ -811,7 +821,7 @@ export class Assignment3 extends Scene {
         console.log('MISSED by not reaching goal');
       }
     }
-    else {
+    else if (!this.ricochet){
       this.shapes.cube.draw(
         context,
         program_state,
@@ -829,6 +839,7 @@ export class Assignment3 extends Scene {
     this.kick = false;
 
     ball_transform = ball_transform.times(Mat4.scale(0.5, 0.5, 0.5));
+    console.log(ball_transform)
     this.shapes.ball.draw(
       context,
       program_state,
@@ -840,7 +851,7 @@ export class Assignment3 extends Scene {
 
   draw_goal(context, program_state) {
     let model_transform = Mat4.identity();
-    let stand_color = color(0.298, 0.298, 0.298, 1);
+
     let goalpost1_transform = model_transform
         .times(Mat4.translation(50, 0, 10))
         .times(Mat4.rotation(-Math.PI / 4, 0, 1, 0))
