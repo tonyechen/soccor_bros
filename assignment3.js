@@ -209,6 +209,10 @@ export class Assignment3 extends Scene {
     this.player_kick_t = 0;
 
     this.game_started=false;
+
+    this.ricochet =false;
+    this.time_of_collision=0;
+    this.ball_transform_at_collision = Mat4.identity();
   }
 
   billboard(context, program_state) {}
@@ -251,7 +255,7 @@ export class Assignment3 extends Scene {
       if (this.ud_angle < 0.02) {
         this.ud_angle = 0;
       }
-      console.log(this.ud_angle);
+
       this._transform = Mat4.identity()
         .times(Mat4.translation(38, 0.5, 0))
         .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
@@ -277,7 +281,6 @@ export class Assignment3 extends Scene {
       if (this.lr_angle > Math.PI / 4) {
         this.lr_angle = Math.PI / 4;
       }
-      console.log(this.lr_angle);
       this._transform = Mat4.identity()
         .times(Mat4.translation(38, 0.5, 0))
         .times(Mat4.rotation(this.ud_angle, 0, 0, 1))
@@ -321,6 +324,7 @@ export class Assignment3 extends Scene {
     this.kick = false;
     this.ball_in_air = false;
     this.time_of_kick = 0;
+    this.riochet =false;
 
     //The "power" of the kick is equivilant to the intitial velocity of the ball before it's projectile motion
     this.power = 20;
@@ -504,7 +508,6 @@ export class Assignment3 extends Scene {
     }
 
     program_state.lights = sceneLights;
-    //console.log(program_state.lights);
 
     let concerete_transform = model_transform
         .times(Mat4.translation(0, -1*(20.1), 0))
@@ -650,12 +653,31 @@ export class Assignment3 extends Scene {
       this.player_kick_t = t;
       this.player_kick_finish = false;
       this.player_kicked = false;
-      console.log('Kicked!');
       this.miss = false;
     }
 
+    if (this.ricochet)
+    {
+      let tsc = t-this.time_of_collision;
+      ball_transform=this.ball_transform_at_collision;
+
+      let delta_x = -1 * (8 * tsc);
+      let delta_y = -0.5 * this.gravity * tsc * tsc;
+
+      ball_transform = ball_transform.times(
+          Mat4.translation(delta_x, delta_y, 0)
+      );
+      if (ball_transform.valueOf()[1][3] < 0.25)
+      {
+        this.resetGoalState();
+        this.ball_in_air = false;
+        this.miss = true;
+        this.ricochet=false;
+      }
+
+    }
+
     if (this.ball_in_air && this.player_kicked) {
-      console.log('animation ball');
       ball_transform = ball_transform.times(
         Mat4.rotation(this.lr_angle, 0, 1, 0)
       );
@@ -682,6 +704,7 @@ export class Assignment3 extends Scene {
           Mat4.translation(delta_x, delta_y, 0)
         );
       }
+      let pre_z_rotation_transform = ball_transform;
       let ball_rotation = 4 * Math.PI * curr_time * 2;
       ball_transform = ball_transform.times(
         Mat4.rotation(ball_rotation, 0, 0, 1)
@@ -693,8 +716,7 @@ export class Assignment3 extends Scene {
         ball_transform.valueOf()[2][3] < 10 &&
         ball_transform.valueOf()[2][3] > -10
       ) {
-        console.log(ball_transform);
-        console.log(this.goalie_position);
+
 
         //if goalie legs height, then use width of legs, if arms, use arm width, if head use only head width
         // widths need to be checked with Tony
@@ -703,34 +725,64 @@ export class Assignment3 extends Scene {
           ball_transform.valueOf()[2][3] < this.goalie_position + 1 &&
           ball_transform.valueOf()[2][3] > this.goalie_position - 1
         ) {
-          this.resetGoalState();
-          this.ball_in_air = false;
-          this.miss = true;
           console.log('hit legs');
           console.log('SAVED');
+          this.ball_in_air = false;
+          this.miss = true;
+          if (this.ud_angle === 0)
+          {
+            this.resetGoalState();
+          }
+          else
+          {
+            this.ricochet=true;
+            this.ball_transform_at_collision = pre_z_rotation_transform;
+            this.time_of_collision=t;
+          }
+
         } else if (
           ball_transform.valueOf()[1][3] > 1.2 &&
           ball_transform.valueOf()[1][3] < 3.2 &&
           ball_transform.valueOf()[2][3] < this.goalie_position + 2 &&
           ball_transform.valueOf()[2][3] > this.goalie_position - 2
         ) {
-          this.resetGoalState();
-          this.ball_in_air = false;
-          this.miss = true;
           console.log('hit body');
           console.log('SAVED');
+          this.ball_in_air = false;
+          this.miss = true;
+          if (this.ud_angle === 0)
+          {
+            this.resetGoalState();
+          }
+          else
+          {
+            this.ricochet=true;
+            this.ball_transform_at_collision = pre_z_rotation_transform;
+            this.time_of_collision=t;
+          }
+
         } else if (
           ball_transform.valueOf()[1][3] > 3.2 &&
           ball_transform.valueOf()[1][3] < 4.2 &&
           ball_transform.valueOf()[2][3] < this.goalie_position + 0.5 &&
           ball_transform.valueOf()[2][3] > this.goalie_position - 0.5
         ) {
-          this.resetGoalState();
-          this.ball_in_air = false;
-          this.miss = true;
           console.log('hit head');
           console.log('SAVED');
-        } else {
+          this.ball_in_air = false;
+          this.miss = true;
+          if (this.ud_angle === 0)
+          {
+            this.resetGoalState();
+          }
+          else
+          {
+            this.ricochet=true;
+            this.ball_transform_at_collision = pre_z_rotation_transform;
+            this.time_of_collision=t;
+          }
+        }
+        else {
           this.goal = true;
           this.score = this.score + 1;
           this.resetGoalState();
@@ -751,7 +803,15 @@ export class Assignment3 extends Scene {
         this.miss = true;
         console.log('MISSED');
       }
-    } else {
+      else if (ball_transform.valueOf()[1][3] < 0.25 && this.ud_angle !== 0)
+      {
+        this.resetGoalState();
+        this.ball_in_air = false;
+        this.miss = true;
+        console.log('MISSED by not reaching goal');
+      }
+    }
+    else {
       this.shapes.cube.draw(
         context,
         program_state,
@@ -769,7 +829,6 @@ export class Assignment3 extends Scene {
     this.kick = false;
 
     ball_transform = ball_transform.times(Mat4.scale(0.5, 0.5, 0.5));
-
     this.shapes.ball.draw(
       context,
       program_state,
