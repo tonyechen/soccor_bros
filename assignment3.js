@@ -747,19 +747,12 @@ export class Assignment3 extends Scene {
           ball_transform.valueOf()[2][3] > this.goalie_position - 1
         ) {
           console.log('hit legs');
-          this.draw_text
+          console.log('SAVED');
           this.ball_in_air = false;
           this.miss = true;
-          if (this.ud_angle === 0)
-          {
-            this.resetGoalState();
-          }
-          else
-          {
             this.ricochet=true;
             this.ball_transform_at_collision = pre_z_rotation_transform;
             this.time_of_collision=t;
-          }
 
         } else if (
           ball_transform.valueOf()[1][3] > 1.2 &&
@@ -1560,8 +1553,8 @@ export class Assignment3 extends Scene {
           `angle X: ${Math.floor((this.lr_angle / 3.14) * 180)}`,
           3
       );
-    }
 
+    }
     else{
       this.draw_text(context, program_state, `Press b to start`, 20);
     }
