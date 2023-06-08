@@ -214,9 +214,10 @@ export class Assignment3 extends Scene {
     this.ricochet =false;
     this.time_of_collision=0;
     this.ball_transform_at_collision = Mat4.identity();
+    this.project = false;
   }
 
-  billboard(context, program_state) {}
+
   handleAngleUp() {
     //this.ud_prev = this.ud_angle;
     //Only update when the ball hasn't been kicked or when it's not in the air
@@ -626,6 +627,22 @@ export class Assignment3 extends Scene {
     let background_transform = model_transform.times(Mat4.scale(500,500,500));
     this.shapes.cube.draw(context,program_state,background_transform,this.materials.background);
   }
+
+  billboard(context, program_state, text, offset_y){
+    let text_transform = Mat4.identity()
+        // .times(program_state.projection_transform)
+        .times(Mat4.translation(5, 0.2 - offset_y / 3, - offset_y / 18 - 1))
+        .times(Mat4.inverse(program_state.camera_inverse))
+        .times(Mat4.scale(1 / 5, 1 / 5, 1 / 5));
+    console.log("created at", text_transform);
+    this.shapes.text.set_string(text, context.context);
+    this.shapes.text.draw(
+        context,
+        program_state,
+        text_transform,
+        this.materials.text_image
+    );
+  }
   draw_ball_2(context, program_state)
   {
     if (!context.scratchpad.controls) {
@@ -715,6 +732,7 @@ export class Assignment3 extends Scene {
       {
         console.log('hit crossbar');
         console.log('DOINKED');
+        this.billboard(context, program_state, 'DOINKED', 0);
         this.ball_in_air = false;
         this.miss = true;
         this.ricochet=true;
@@ -727,6 +745,7 @@ export class Assignment3 extends Scene {
               (ball_transform.valueOf()[2][3]>5 && ball_transform.valueOf()[2][3]<10))){
         console.log('hit post');
         console.log('DOINKED');
+        this.billboard(context, program_state, 'DOINKED', 0);
         this.ball_in_air = false;
         this.miss = true;
         this.ricochet=true;
@@ -748,6 +767,7 @@ export class Assignment3 extends Scene {
         ) {
           console.log('hit legs');
           console.log('SAVED');
+          this.billboard(context, program_state, 'SAVED', 0);
           this.ball_in_air = false;
           this.miss = true;
             this.ricochet=true;
@@ -762,6 +782,7 @@ export class Assignment3 extends Scene {
         ) {
           console.log('hit body');
           console.log('SAVED');
+          this.billboard(context, program_state, 'SAVED', 0);
           this.ball_in_air = false;
           this.miss = true;
           if (this.ud_angle === 0)
@@ -783,6 +804,7 @@ export class Assignment3 extends Scene {
         ) {
           console.log('hit head');
           console.log('SAVED');
+          this.billboard(context, program_state, 'SAVED', 0);
           this.ball_in_air = false;
           this.miss = true;
           if (this.ud_angle === 0)
@@ -802,6 +824,7 @@ export class Assignment3 extends Scene {
           this.resetGoalState();
           this.ball_in_air = false;
           console.log('scored!');
+          this.billboard(context, program_state, 'SCORED', 0);
         }
         //ball_transform = model_transform.times(Mat4.translation(55 , 2.2, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
       } else if (
@@ -816,6 +839,7 @@ export class Assignment3 extends Scene {
         this.ball_in_air = false;
         this.miss = true;
         console.log('MISSED');
+        this.billboard(context, program_state, 'MISSED', 0);
       }
       else if (ball_transform.valueOf()[1][3] < 0.25 && this.ud_angle !== 0)
       {
@@ -823,6 +847,7 @@ export class Assignment3 extends Scene {
         this.ball_in_air = false;
         this.miss = true;
         console.log('MISSED by not reaching goal');
+        this.billboard(context, program_state, 'SHANKED', 0);
       }
     }
     else if (!this.ricochet){
@@ -843,7 +868,7 @@ export class Assignment3 extends Scene {
     this.kick = false;
 
     ball_transform = ball_transform.times(Mat4.scale(0.5, 0.5, 0.5));
-    console.log(ball_transform)
+    //console.log(ball_transform)
     this.shapes.ball.draw(
       context,
       program_state,
