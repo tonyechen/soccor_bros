@@ -1,4 +1,5 @@
 import { defs, tiny } from './examples/common.js';
+import { Text_Line } from './examples/text-demo.js';
 
 const {
   Vector,
@@ -34,8 +35,8 @@ export class Assignment3 extends Scene {
       ),
       cone: new defs.Cone_Tip(3, 3, [0, 1]),
       guide: new defs.Axis_Arrows(),
-      triangle: new defs.Triangle()
-
+      triangle: new defs.Triangle(),
+      text: new Text_Line(35),
     };
 
     // *** Materials
@@ -152,6 +153,12 @@ export class Assignment3 extends Scene {
         diffusivity: 0.5,
         specularity: 0,
         color: hex_color('#E0AC69'),
+      }),
+      text_image: new Material(new defs.Textured_Phong(1), {
+        ambient: 1,
+        diffusivity: 0,
+        specularity: 0,
+        texture: new Texture('assets/text.png'),
       }),
     };
 
@@ -337,10 +344,11 @@ export class Assignment3 extends Scene {
     if (this.game_started)
     {
       this.power = this.power + 1;
-      if (this.power > 20) {
-        this.power = 20;
+      if (this.power > 40) {
+        this.power = 40;
       }
     }
+
   }
 
   handleDecreasePower() {
@@ -678,14 +686,16 @@ export class Assignment3 extends Scene {
       ball_transform = ball_transform.times(
         Mat4.rotation(ball_rotation, 0, 0, 1)
       );
+
       if (
-        ball_transform.valueOf()[0][3] > 50.0 &&
+        ball_transform.valueOf()[0][3] > 48.0 &&
         ball_transform.valueOf()[1][3] < 5.6 &&
         ball_transform.valueOf()[2][3] < 10 &&
         ball_transform.valueOf()[2][3] > -10
       ) {
-        console.log(ball_transform.valueOf()[2][3]);
+        console.log(ball_transform);
         console.log(this.goalie_position);
+
         //if goalie legs height, then use width of legs, if arms, use arm width, if head use only head width
         // widths need to be checked with Tony
         if (
@@ -696,29 +706,36 @@ export class Assignment3 extends Scene {
           this.resetGoalState();
           this.ball_in_air = false;
           this.miss = true;
+          console.log('hit legs');
           console.log('SAVED');
         } else if (
           ball_transform.valueOf()[1][3] > 1.2 &&
           ball_transform.valueOf()[1][3] < 3.2 &&
-          ball_transform.valueOf()[2][3] < this.goalie_position - 1.6 &&
-          ball_transform.valueOf()[2][3] > this.goalie_position + 1.6
+          ball_transform.valueOf()[2][3] < this.goalie_position + 2 &&
+          ball_transform.valueOf()[2][3] > this.goalie_position - 2
         ) {
           this.resetGoalState();
           this.ball_in_air = false;
           this.miss = true;
+          console.log('hit body');
           console.log('SAVED');
         } else if (
           ball_transform.valueOf()[1][3] > 3.2 &&
           ball_transform.valueOf()[1][3] < 4.2 &&
-          ball_transform.valueOf()[2][3] < this.goalie_position - 0.5 &&
-          ball_transform.valueOf()[2][3] > this.goalie_position + 0.5
+          ball_transform.valueOf()[2][3] < this.goalie_position + 0.5 &&
+          ball_transform.valueOf()[2][3] > this.goalie_position - 0.5
         ) {
+          this.resetGoalState();
+          this.ball_in_air = false;
+          this.miss = true;
+          console.log('hit head');
+          console.log('SAVED');
         } else {
           this.goal = true;
           this.score = this.score + 1;
           this.resetGoalState();
           this.ball_in_air = false;
-          console.log('GOAL!');
+          console.log('scored!');
         }
         //ball_transform = model_transform.times(Mat4.translation(55 , 2.2, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
       } else if (
@@ -815,7 +832,7 @@ export class Assignment3 extends Scene {
     const head_width = 1;
     const head_height = 1;
 
-    const animation_speed = 2;
+    const animation_speed = 4;
 
     const t = program_state.animation_time / 1000,
         dt = program_state.animation_delta_time / 1000;
@@ -1333,12 +1350,44 @@ export class Assignment3 extends Scene {
     }
   }
 
+  draw_text(context, program_state, text, offset_y) {
+    // offset_y is the line number
+  if(this.attached !== undefined){
+    // fix text to the camera
+    let text_transform = Mat4.identity()
+        // .times(program_state.projection_transform)
+        .times(Mat4.translation(5, 0.5 - offset_y / 3, -3.2 - offset_y / 18))
+        .times(Mat4.inverse(program_state.camera_inverse))
+        .times(Mat4.scale(1 / 10, 1 / 10, 1 / 10));
+    this.shapes.text.set_string(text, context.context);
+    this.shapes.text.draw(
+        context,
+        program_state,
+        text_transform,
+        this.materials.text_image
+    );
+    }
+  else{
+    let text_transform = Mat4.identity()
+        // .times(program_state.projection_transform)
+        .times(Mat4.translation(5, 0.5 - offset_y / 3, -8 - offset_y / 18))
+        .times(Mat4.inverse(program_state.camera_inverse))
+        .times(Mat4.scale(1 / 5, 1 / 5, 1 / 5));
+    this.shapes.text.set_string(text, context.context);
+    this.shapes.text.draw(
+        context,
+        program_state,
+        text_transform,
+        this.materials.text_image
+    );
+  }
+  }
+
   display(context, program_state) {
     const t = program_state.animation_time / 1000,
       dt = program_state.animation_delta_time / 1000;
 
     this.draw_stadium(context, program_state);
-    this.billboard(context, program_state);
     this.draw_goal(context, program_state);
     this.draw_ball_2(context, program_state);
     let start_transform = Mat4.identity();
@@ -1355,7 +1404,7 @@ export class Assignment3 extends Scene {
       this.goalie_direction = 1;
     }
     this.goalie_position += this.goalie_direction * this.goalie_speed * dt;
-
+    this.goalie_position = 0;
     start_transform = start_transform
       .times(Mat4.translation(49, 0, this.goalie_position))
       .times(Mat4.rotation(-1.5, 0, 1, 0))
@@ -1378,9 +1427,9 @@ export class Assignment3 extends Scene {
     if (!this.player_kick_finish) {
       let kick_animation_t = t - this.player_kick_t;;
       start_transform = start_transform.times(
-        Mat4.translation(-kick_animation_t / 8, 0, kick_animation_t)
+        Mat4.translation(-kick_animation_t / 4, 0, 2 * kick_animation_t)
       );
-      if (kick_animation_t < 3.14) {
+      if (kick_animation_t < 1.57) {
         this.draw_player(
           context,
           program_state,
@@ -1388,7 +1437,7 @@ export class Assignment3 extends Scene {
           'player',
           'running'
         );
-      } else if (kick_animation_t < 4.71) {
+      } else if (kick_animation_t < 2.355) {
         this.draw_player(
           context,
           program_state,
@@ -1396,9 +1445,9 @@ export class Assignment3 extends Scene {
           'player',
           'kicking'
         );
-      } else if (kick_animation_t < 5.5) {
+      } else if (kick_animation_t < 3.14) {
         this.player_kicked = true;
-        this.time_of_kick = this.player_kick_t + 4.71;
+        this.time_of_kick = this.player_kick_t + 2.355;
         this.draw_player(
           context,
           program_state,
@@ -1415,7 +1464,27 @@ export class Assignment3 extends Scene {
     if (this.attached !== undefined) {
       // Blend desired camera position with existing camera matrix (from previous frame) to smoothly pull camera towards planet
       program_state.camera_inverse = this.attached().map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
+      //program_state.set_camera(this.shootout);
+      this.draw_text(context, program_state, `score: ${this.score}`, 0);
+      this.draw_text(context, program_state, `power: ${this.power}`, 1);
+      this.draw_text(
+          context,
+          program_state,
+          `angle Y: ${Math.floor((this.ud_angle / 3.14) * 180)}`,
+          2
+      );
+      this.draw_text(
+          context,
+          program_state,
+          `angle X: ${Math.floor((this.lr_angle / 3.14) * 180)}`,
+          3
+      );
+
     }
+    else{
+      this.draw_text(context, program_state, `Press b to start`, 20);
+    }
+
 
   }
 }
