@@ -658,11 +658,14 @@ export class Assignment3 extends Scene {
       );
 
       let curr_time = t - this.time_of_kick;
+      let delta_x;
+      let delta_y;
+
       //Ball is on the ground
       if (this.ud_angle === 0) {
         let initial_velocity = this.power;
-        let delta_x = initial_velocity * curr_time;
-        ball_transform = ball_transform.times(Mat4.translation(delta_x, 0, 0));
+        delta_x = initial_velocity * curr_time;
+        delta_y = 0;
       } else {
         let initial_velocity = this.power;
         let initial_velocity_x = initial_velocity * Math.cos(this.ud_angle);
@@ -670,19 +673,11 @@ export class Assignment3 extends Scene {
 
         let gravity = this.gravity;
 
-        let delta_x = initial_velocity_x * curr_time;
-        let delta_y =
+        delta_x = initial_velocity_x * curr_time;
+        delta_y =
           -0.5 * gravity * curr_time * curr_time +
           initial_velocity_y * curr_time;
-
-        ball_transform = ball_transform.times(
-          Mat4.translation(delta_x, delta_y, 0)
-        );
       }
-      let ball_rotation = 4 * Math.PI * curr_time * 2;
-      ball_transform = ball_transform.times(
-        Mat4.rotation(ball_rotation, 0, 0, 1)
-      );
 
       if (
         ball_transform.valueOf()[0][3] > 48.0 &&
@@ -700,8 +695,6 @@ export class Assignment3 extends Scene {
           ball_transform.valueOf()[2][3] < this.goalie_position + 1 &&
           ball_transform.valueOf()[2][3] > this.goalie_position - 1
         ) {
-          this.resetGoalState();
-          this.ball_in_air = false;
           this.miss = true;
           console.log('hit legs');
           console.log('SAVED');
@@ -711,8 +704,6 @@ export class Assignment3 extends Scene {
           ball_transform.valueOf()[2][3] < this.goalie_position + 2 &&
           ball_transform.valueOf()[2][3] > this.goalie_position - 2
         ) {
-          this.resetGoalState();
-          this.ball_in_air = false;
           this.miss = true;
           console.log('hit body');
           console.log('SAVED');
@@ -722,16 +713,12 @@ export class Assignment3 extends Scene {
           ball_transform.valueOf()[2][3] < this.goalie_position + 0.5 &&
           ball_transform.valueOf()[2][3] > this.goalie_position - 0.5
         ) {
-          this.resetGoalState();
-          this.ball_in_air = false;
           this.miss = true;
           console.log('hit head');
           console.log('SAVED');
         } else {
+          if (!this.goal) this.score = this.score + 1;
           this.goal = true;
-          this.score = this.score + 1;
-          this.resetGoalState();
-          this.ball_in_air = false;
           console.log('scored!');
         }
         //ball_transform = model_transform.times(Mat4.translation(55 , 2.2, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
@@ -743,9 +730,22 @@ export class Assignment3 extends Scene {
         (ball_transform.valueOf()[0][3] > 50.0 &&
           ball_transform.valueOf()[2][3] < -10)
       ) {
-        this.resetGoalState();
-        this.ball_in_air = false;
         this.miss = true;
+      }
+
+      // ball transforms
+      ball_transform = ball_transform.times(
+        Mat4.translation(delta_x, delta_y, 0)
+      );
+
+      let ball_rotation = 4 * Math.PI * curr_time * 2;
+      ball_transform = ball_transform.times(
+        Mat4.rotation(ball_rotation, 0, 0, 1)
+      );
+
+      // timer until the ball resets
+      if (curr_time > 3) {
+        this.resetGoalState();
       }
     } else {
       this.shapes.cube.draw(
@@ -1400,7 +1400,6 @@ export class Assignment3 extends Scene {
       this.goalie_direction = 1;
     }
     this.goalie_position += this.goalie_direction * this.goalie_speed * dt;
-    this.goalie_position = 0;
     start_transform = start_transform
       .times(Mat4.translation(49, 0, this.goalie_position))
       .times(Mat4.rotation(-1.5, 0, 1, 0))
