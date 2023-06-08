@@ -203,6 +203,7 @@ export class Assignment3 extends Scene {
     this.isGoalieRandom = false;
     this.goalie_random_timer = 0;
     this.goalieDirChangeFrequency = 0.5; // change / s
+    this.goalie_isStill = true;
 
     this.player_kick_finish = true;
     this.player_kicked = true;
@@ -372,10 +373,6 @@ export class Assignment3 extends Scene {
   }
 
   make_control_panel() {
-    this.key_triggered_button('kick', ['t'], () => {
-        this.kick = true;
-        this.kick_t = new Date().getTime();
-    });
     this.key_triggered_button(
         'kick',
         ['t'],
@@ -411,6 +408,9 @@ export class Assignment3 extends Scene {
           }
         }
     );
+    this.key_triggered_button(`toggle goalie movement`, ['y'], () => {
+      this.goalie_isStill = !this.goalie_isStill;
+    });
     this.key_triggered_button(
         'start',
         ['b'],
@@ -1477,8 +1477,14 @@ export class Assignment3 extends Scene {
     } else if (this.goalie_position < -8) {
       this.goalie_direction = 1;
     }
-    this.goalie_position += this.goalie_direction * this.goalie_speed * dt;
-    this.goalie_position = 0;
+
+    if (this.goalie_isStill) {
+      this.goalie_position = 0;
+    }
+    else {
+      this.goalie_position += this.goalie_direction * this.goalie_speed * dt;
+    }
+
     start_transform = start_transform
       .times(Mat4.translation(49, 0, this.goalie_position))
       .times(Mat4.rotation(-1.5, 0, 1, 0))
