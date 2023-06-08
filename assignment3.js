@@ -683,14 +683,16 @@ export class Assignment3 extends Scene {
       ball_transform = ball_transform.times(
         Mat4.rotation(ball_rotation, 0, 0, 1)
       );
+
       if (
-        ball_transform.valueOf()[0][3] > 50.0 &&
+        ball_transform.valueOf()[0][3] > 48.0 &&
         ball_transform.valueOf()[1][3] < 5.6 &&
         ball_transform.valueOf()[2][3] < 10 &&
         ball_transform.valueOf()[2][3] > -10
       ) {
-        console.log(ball_transform.valueOf()[2][3]);
+        console.log(ball_transform);
         console.log(this.goalie_position);
+
         //if goalie legs height, then use width of legs, if arms, use arm width, if head use only head width
         // widths need to be checked with Tony
         if (
@@ -701,28 +703,36 @@ export class Assignment3 extends Scene {
           this.resetGoalState();
           this.ball_in_air = false;
           this.miss = true;
+          console.log('hit legs');
           console.log('SAVED');
         } else if (
           ball_transform.valueOf()[1][3] > 1.2 &&
           ball_transform.valueOf()[1][3] < 3.2 &&
-          ball_transform.valueOf()[2][3] < this.goalie_position - 2 &&
-          ball_transform.valueOf()[2][3] > this.goalie_position + 2
+          ball_transform.valueOf()[2][3] < this.goalie_position + 2 &&
+          ball_transform.valueOf()[2][3] > this.goalie_position - 2
         ) {
           this.resetGoalState();
           this.ball_in_air = false;
           this.miss = true;
+          console.log('hit body');
           console.log('SAVED');
         } else if (
           ball_transform.valueOf()[1][3] > 3.2 &&
           ball_transform.valueOf()[1][3] < 4.2 &&
-          ball_transform.valueOf()[2][3] < this.goalie_position - 0.5 &&
-          ball_transform.valueOf()[2][3] > this.goalie_position + 0.5
+          ball_transform.valueOf()[2][3] < this.goalie_position + 0.5 &&
+          ball_transform.valueOf()[2][3] > this.goalie_position - 0.5
         ) {
+          this.resetGoalState();
+          this.ball_in_air = false;
+          this.miss = true;
+          console.log('hit head');
+          console.log('SAVED');
         } else {
           this.goal = true;
           this.score = this.score + 1;
           this.resetGoalState();
           this.ball_in_air = false;
+          console.log('scored!');
         }
         //ball_transform = model_transform.times(Mat4.translation(55 , 2.2, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
       } else if (
@@ -1390,7 +1400,7 @@ export class Assignment3 extends Scene {
       this.goalie_direction = 1;
     }
     this.goalie_position += this.goalie_direction * this.goalie_speed * dt;
-
+    this.goalie_position = 0;
     start_transform = start_transform
       .times(Mat4.translation(49, 0, this.goalie_position))
       .times(Mat4.rotation(-1.5, 0, 1, 0))
