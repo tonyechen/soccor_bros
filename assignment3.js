@@ -720,7 +720,18 @@ export class Assignment3 extends Scene {
         this.ricochet=true;
         this.ball_transform_at_collision = pre_z_rotation_transform;
         this.time_of_collision=t;
-
+      }
+      else if(ball_transform.valueOf()[1][3] < 6.1  && ball_transform.valueOf()[0][3] > 48.0
+          && ball_transform.valueOf()[0][3] < 48.5
+          && ((ball_transform.valueOf()[2][3]>-10 && ball_transform.valueOf()[2][3]<-6) ||
+              (ball_transform.valueOf()[2][3]>5 && ball_transform.valueOf()[2][3]<10))){
+        console.log('hit post');
+        console.log('DOINKED');
+        this.ball_in_air = false;
+        this.miss = true;
+        this.ricochet=true;
+        this.ball_transform_at_collision = pre_z_rotation_transform;
+        this.time_of_collision=t;
       }
       else if (
         ball_transform.valueOf()[0][3] > 48.0 &&
@@ -736,7 +747,7 @@ export class Assignment3 extends Scene {
           ball_transform.valueOf()[2][3] > this.goalie_position - 1
         ) {
           console.log('hit legs');
-          console.log('SAVED');
+          this.draw_text
           this.ball_in_air = false;
           this.miss = true;
           if (this.ud_angle === 0)
@@ -1549,8 +1560,8 @@ export class Assignment3 extends Scene {
           `angle X: ${Math.floor((this.lr_angle / 3.14) * 180)}`,
           3
       );
-
     }
+
     else{
       this.draw_text(context, program_state, `Press b to start`, 20);
     }
