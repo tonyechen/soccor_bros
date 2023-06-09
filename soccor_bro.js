@@ -380,20 +380,20 @@ export class SoccorBro extends Scene {
   make_control_panel() {
     this.key_triggered_button(
         'kick',
-        ['t'],
+        [' '],
         () => (this.kick = !this.ball_in_air)
     );
     //99999999
-    this.key_triggered_button('aim_up', ['9'], () => this.handleAngleUp());
-    this.key_triggered_button('aim_down', ['8'], () => this.handleAngleDown());
-    this.key_triggered_button('aim_left', ['7'], () => this.handleAngleLeft());
-    this.key_triggered_button('aim_right', ['6'], () =>
+    this.key_triggered_button('aim_up', ['w'], () => this.handleAngleUp());
+    this.key_triggered_button('aim_down', ['s'], () => this.handleAngleDown());
+    this.key_triggered_button('aim_left', ['a'], () => this.handleAngleLeft());
+    this.key_triggered_button('aim_right', ['d'], () =>
       this.handleAngleRight()
     );
 
     this.key_triggered_button(
         'increase power',
-        ['p'],
+        ['e'],
         () => this.handleIncreasePower()
     );
     this.key_triggered_button(
@@ -403,7 +403,7 @@ export class SoccorBro extends Scene {
     );
     this.key_triggered_button(
         `toggle difficulty`,
-        ['g'],
+        ['f'],
         () => {
           this.isGoalieRandom = !this.isGoalieRandom;
           if (this.isGoalieRandom) {
@@ -424,13 +424,6 @@ export class SoccorBro extends Scene {
   }
 
   draw_stadium(context, program_state) {
-    if (!context.scratchpad.controls) {
-      this.children.push(
-          (context.scratchpad.controls = new defs.Movement_Controls())
-      );
-      // Define the global camera and projection matrices, which are stored in program_state.
-      program_state.set_camera(this.initial_camera_location);
-    }
 
     program_state.projection_transform = Mat4.perspective(
         Math.PI / 4,
@@ -649,13 +642,6 @@ export class SoccorBro extends Scene {
   }
   draw_ball_2(context, program_state)
   {
-    if (!context.scratchpad.controls) {
-      this.children.push(
-        (context.scratchpad.controls = new defs.Movement_Controls())
-      );
-      // Define the global camera and projection matrices, which are stored in program_state.
-      program_state.set_camera(this.initial_camera_location);
-    }
     program_state.projection_transform = Mat4.perspective(
       Math.PI / 4,
       context.width / context.height,
@@ -1502,6 +1488,10 @@ export class SoccorBro extends Scene {
   }
 
   display(context, program_state) {
+    if (!this.game_started) {
+      program_state.set_camera(this.initial_camera_location);
+    }
+
     const t = program_state.animation_time / 1000,
       dt = program_state.animation_delta_time / 1000;
 
