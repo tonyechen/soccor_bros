@@ -20,7 +20,7 @@ const {
 } = tiny;
 const { Textured_Phong} = defs;
 
-export class Assignment3 extends Scene {
+export class SoccorBro extends Scene {
   constructor() {
     // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
     super();
