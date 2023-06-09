@@ -215,6 +215,10 @@ export class Assignment3 extends Scene {
     this.time_of_collision=0;
     this.ball_transform_at_collision = Mat4.identity();
     this.project = false;
+
+    this.billboard_start_t = 0;
+    this.billboard_on = false;
+    this.billboard_message = '';
   }
 
 
@@ -728,32 +732,35 @@ export class Assignment3 extends Scene {
       );
 
       //TOPBAR CODE IS THE BENEATH IF STATEMENT
-      if (ball_transform.valueOf()[1][3] < 6.1 && ball_transform.valueOf()[1][3] > 5.1 && ball_transform.valueOf()[0][3] > 47.5 && ball_transform.valueOf()[0][3] < 48.5 && ball_transform.valueOf()[2][3]>-10 && ball_transform.valueOf()[2][3]<10)
+      if (ball_transform.valueOf()[1][3] < 6.1 && ball_transform.valueOf()[1][3] > 5.1 && ball_transform.valueOf()[0][3] > 49.0 && ball_transform.valueOf()[0][3] < 49.5 && ball_transform.valueOf()[2][3]>-10 && ball_transform.valueOf()[2][3]<10)
       {
         console.log('hit crossbar');
         console.log('DOINKED');
-        this.billboard(context, program_state, 'DOINKED', 0);
+        this.billboard_on = true;
+        this.billboard_message = 'DOINKED';
+        this.billboard_start_t = t;
         this.ball_in_air = false;
         this.miss = true;
         this.ricochet=true;
         this.ball_transform_at_collision = pre_z_rotation_transform;
         this.time_of_collision=t;
       }
-      else if(ball_transform.valueOf()[1][3] < 6.1  && ball_transform.valueOf()[0][3] > 48.0
-          && ball_transform.valueOf()[0][3] < 48.5
-          && ((ball_transform.valueOf()[2][3]>-10 && ball_transform.valueOf()[2][3]<-6) ||
-              (ball_transform.valueOf()[2][3]>5 && ball_transform.valueOf()[2][3]<10))){
+      else if(ball_transform.valueOf()[1][3] < 6.1  && ball_transform.valueOf()[0][3] > 48.5
+          && ball_transform.valueOf()[0][3] < 49.0
+          && ((ball_transform.valueOf()[2][3]>-10 && ball_transform.valueOf()[2][3]<-8) ||
+              (ball_transform.valueOf()[2][3]>8 && ball_transform.valueOf()[2][3]<10))){
         console.log('hit post');
         console.log('DOINKED');
-        this.billboard(context, program_state, 'DOINKED', 0);
-        this.ball_in_air = false;
+        this.billboard_on = true;
+        this.billboard_message = 'DOINKED';
+        this.billboard_start_t = t;        this.ball_in_air = false;
         this.miss = true;
         this.ricochet=true;
         this.ball_transform_at_collision = pre_z_rotation_transform;
         this.time_of_collision=t;
       }
       else if (
-        ball_transform.valueOf()[0][3] > 48.0 &&
+        ball_transform.valueOf()[0][3] > 48.5 &&
         ball_transform.valueOf()[1][3] < 5.6 &&
         ball_transform.valueOf()[2][3] < 10 &&
         ball_transform.valueOf()[2][3] > -10
@@ -767,7 +774,9 @@ export class Assignment3 extends Scene {
         ) {
           console.log('hit legs');
           console.log('SAVED');
-          this.billboard(context, program_state, 'SAVED', 0);
+          this.billboard_on = true;
+          this.billboard_message = 'SAVED!';
+          this.billboard_start_t = t;
           this.ball_in_air = false;
           this.miss = true;
             this.ricochet=true;
@@ -782,7 +791,9 @@ export class Assignment3 extends Scene {
         ) {
           console.log('hit body');
           console.log('SAVED');
-          this.billboard(context, program_state, 'SAVED', 0);
+          this.billboard_on = true;
+          this.billboard_message = 'SAVED!';
+          this.billboard_start_t = t;
           this.ball_in_air = false;
           this.miss = true;
           if (this.ud_angle === 0)
@@ -804,7 +815,9 @@ export class Assignment3 extends Scene {
         ) {
           console.log('hit head');
           console.log('SAVED');
-          this.billboard(context, program_state, 'SAVED', 0);
+          this.billboard_on = true;
+          this.billboard_message = 'SAVED!';
+          this.billboard_start_t = t;
           this.ball_in_air = false;
           this.miss = true;
           if (this.ud_angle === 0)
@@ -824,7 +837,9 @@ export class Assignment3 extends Scene {
           this.resetGoalState();
           this.ball_in_air = false;
           console.log('scored!');
-          this.billboard(context, program_state, 'SCORED', 0);
+          this.billboard_on = true;
+          this.billboard_message = 'SCORED!';
+          this.billboard_start_t = t;
         }
         //ball_transform = model_transform.times(Mat4.translation(55 , 2.2, 0)).times(Mat4.scale(0.5, 0.5, 0.5));
       } else if (
@@ -839,7 +854,9 @@ export class Assignment3 extends Scene {
         this.ball_in_air = false;
         this.miss = true;
         console.log('MISSED');
-        this.billboard(context, program_state, 'MISSED', 0);
+        this.billboard_on = true;
+        this.billboard_message = 'MISSED';
+        this.billboard_start_t = t;
       }
       else if (ball_transform.valueOf()[1][3] < 0.25 && this.ud_angle !== 0)
       {
@@ -847,7 +864,9 @@ export class Assignment3 extends Scene {
         this.ball_in_air = false;
         this.miss = true;
         console.log('MISSED by not reaching goal');
-        this.billboard(context, program_state, 'SHANKED', 0);
+        this.billboard_on = true;
+        this.billboard_message = 'SHANKED';
+        this.billboard_start_t = t;
       }
     }
     else if (!this.ricochet){
@@ -1590,6 +1609,10 @@ export class Assignment3 extends Scene {
       this.draw_text(context, program_state, `Press b to start`, 20);
     }
 
-
+    if (this.billboard_on && t - this.billboard_start_t < 0.5) {
+        this.billboard(context, program_state, this.billboard_message, 0);
+    } else {
+      this.billboard_on = false;
+    }
   }
 }
